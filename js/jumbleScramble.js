@@ -90,23 +90,29 @@
 																					//occurrences of non-moving elements in safari iPad.
 		var oldPos = (thisElt.eltPos != null ? thisElt.eltPos : ui.position); 			//find the old position stored on the $object 
 		thisElt.eltPos = ui.position;													//its current position derived from $draggable object		
+		//console.log(thisElt.eltPos.left)
+		eltParentId = elt[0].parentElement.parentElement.attributes.id.nodeValue;
+		adjacentParentId = (eltParentId == 'jMyPuzzleId1' ? eltsObject.jMyPuzzleId0 : eltsObject.jMyPuzzleId1);
+		var adjacentDir = adjacentParentId[0].parent().offset().left -  elt.parent().offset().left;	
+		var dirSwitch = (eltParentId == 'jMyPuzzleId1' ? thisElt.eltPos.left < adjacentDir/2 :thisElt.eltPos.left > adjacentDir/2); 
+
 	
-		if (thisElt.eltPos.left > 400 && trigger == false) {
+		if (dirSwitch && trigger == false) {								// trigger animations for adjacent container
 			console.log('hello')
 			trigger = true;
 		 	tempArr = [];
 			
-			for(var i = 0; i < eltsObject.jMyPuzzleId1.length; i++){ 						//Loop the array
+			for(var i = 0; i < adjacentParentId.length; i++){ 						//Loop the array
 			
-					tempArr.push(Math.abs(eltsObject.jMyPuzzleId1[i].pos.top))
+					tempArr.push(Math.abs(adjacentParentId[i].pos.top))
 			
 				
 			}
 			
 			nToAnimate = tempArr.indexOf(closest(tempArr, thisElt.eltPos.top)); 
 
-			 for(var ind = nToAnimate; ind < eltsObject.jMyPuzzleId1.length; ind++){ 						//Loop the array starting from the first element to be moved down
-				var objectNumber = eltsObject.jMyPuzzleId1[ind];
+			 for(var ind = nToAnimate; ind < adjacentParentId.length; ind++){ 						//Loop the array starting from the first element to be moved down
+				var objectNumber = adjacentParentId[ind];
 				
 				if (objectNumber.moved != true) {
 					objectNumber.transition({y: '+=' + elt.completeHeight},200);
@@ -119,12 +125,12 @@
 					
 				
 		};
-		if (thisElt.eltPos.left < 300 && trigger == true) {
+		 if (!dirSwitch && trigger == true) {											// go back to original container
 			
 			trigger = false;
 			
-			 for(var ind = 0; ind < eltsObject.jMyPuzzleId1.length; ind++){ 						//Loop the array starting from the first element to be moved down
-				var objectNumber = eltsObject.jMyPuzzleId1[ind];
+			 for(var ind = 0; ind < adjacentParentId.length; ind++){ 						//Loop the array starting from the first element to be moved down
+				var objectNumber = adjacentParentId[ind];
 				
 				if (objectNumber.moved == true) {
 					objectNumber.transition({y: 0},200);
@@ -136,11 +142,8 @@
 			}
 			
 			
-		}
-
-		
-	 	
-		
+		} 
+	
 				
 		if(!o.isHorizontal && thisElt.eltPos.left != oldPos.left) { 
 			move = (thisElt.eltPos.left > oldPos.left ? 'forward' : 'backward');		// check whether the move is forward or backward
@@ -195,8 +198,8 @@
 	
 			  if (trigger) {										// trigger  for animating adjacent container
 				
-				for(var i = 0; i < eltsObject.jMyPuzzleId1.length; i++){ 			//Loop the array
-					var obj = eltsObject.jMyPuzzleId1[i]
+				for(var i = 0; i < adjacentParentId.length; i++){ 			//Loop the array
+					var obj = adjacentParentId[i]
 					if (ui.position.top  < obj.pos.top + obj.completeHeight/2) {
 							
 						if (obj.moved == false) {
@@ -235,8 +238,8 @@
 		
 		    if (trigger) {										// trigger  for animating adjacent container
 						
-				for(var i = 0; i < eltsObject.jMyPuzzleId1.length; i++){ //Loop the array
-					var obj = eltsObject.jMyPuzzleId1[i]
+				for(var i = 0; i < adjacentParentId.length; i++){ //Loop the array
+					var obj = adjacentParentId[i]
 					if (ui.position.top  + elt.completeHeight > obj.pos.top + obj.completeHeight/2) {
 							
 						if (obj.moved == true) {
