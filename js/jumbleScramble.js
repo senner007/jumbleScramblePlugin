@@ -80,7 +80,7 @@
  	
 	
 	var nToAnimate
-	var tempArr 
+	var tempArray 
 	
 	var trigger = false;
 	
@@ -91,25 +91,28 @@
 		var oldPos = (thisElt.eltPos != null ? thisElt.eltPos : ui.position); 			//find the old position stored on the $object 
 		thisElt.eltPos = ui.position;													//its current position derived from $draggable object		
 		//console.log(thisElt.eltPos.left)
+		
+		//console.log(elt)
+		
 		eltParentId = elt[0].parentElement.parentElement.attributes.id.nodeValue;
 		adjacentParentId = (eltParentId == 'jMyPuzzleId1' ? eltsObject.jMyPuzzleId0 : eltsObject.jMyPuzzleId1);
-		var adjacentDir = adjacentParentId[0].parent().offset().left -  elt.parent().offset().left;	
+		adjacentDir = adjacentParentId[0].parent().offset().left -  elt.parent().offset().left;	
 		var dirSwitch = (eltParentId == 'jMyPuzzleId1' ? thisElt.eltPos.left < adjacentDir/2 :thisElt.eltPos.left > adjacentDir/2); 
 
 	
 		if (dirSwitch && trigger == false) {								// trigger animations for adjacent container
 			console.log('hello')
 			trigger = true;
-		 	tempArr = [];
+		 	tempArray = [];
 			
 			for(var i = 0; i < adjacentParentId.length; i++){ 						//Loop the array
 			
-					tempArr.push(Math.abs(adjacentParentId[i].pos.top))
+					tempArray.push(Math.abs(adjacentParentId[i].pos.top))
 			
 				
 			}
 			
-			nToAnimate = tempArr.indexOf(closest(tempArr, thisElt.eltPos.top)); 
+			nToAnimate = tempArray.indexOf(closest(tempArray, thisElt.eltPos.top)); 
 
 			 for(var ind = nToAnimate; ind < adjacentParentId.length; ind++){ 						//Loop the array starting from the first element to be moved down
 				var objectNumber = adjacentParentId[ind];
@@ -118,11 +121,13 @@
 					objectNumber.transition({y: '+=' + elt.completeHeight},200);
 						objectNumber.moved = true;
 						objectNumber.pos.top = objectNumber.pos.top + elt.completeHeight;
+						
+						
 				}
 					
 				
 			}	 	
-					
+			elt.insertPos = adjacentParentId[nToAnimate].n		
 				
 		};
 		 if (!dirSwitch && trigger == true) {											// go back to original container
@@ -143,7 +148,7 @@
 			
 			
 		} 
-	
+		console.log(elt.insertPos)
 				
 		if(!o.isHorizontal && thisElt.eltPos.left != oldPos.left) { 
 			move = (thisElt.eltPos.left > oldPos.left ? 'forward' : 'backward');		// check whether the move is forward or backward
@@ -205,8 +210,10 @@
 						if (obj.moved == false) {
 						
 							obj.transition({y: '+=' + elt.completeHeight}, 250)
-								obj.moved = true;
+							obj.moved = true;
+							elt.insertPos = obj.n;
 							obj.pos.top = obj.pos.top + elt.completeHeight;
+							
 						
 						}
 					}
@@ -245,7 +252,8 @@
 						if (obj.moved == true) {
 						
 							obj.transition({y: 0}, 250)
-								obj.moved = false;
+							obj.moved = false;
+							elt.insertPos = obj.n +1;
 							obj.pos.top = obj.pos.top - elt.completeHeight;
 						
 						}
@@ -281,30 +289,49 @@
 
 		if (o.setChars) {	 setChars(div);	}			// calls the setChars function	
 		
-		elt.transition({'left': elt.pos.left + 'px', top : elt.pos.top, x:  ui.position.left - elt.pos.left, y:  ui.position.top - elt.pos.top },0, function () {
-		
-		if (o.setChars)	{										// re-align lis after uppercase/lowercase for difficulty setting  2	
-		
-			outAnim = { x: 0, y: 0, 'opacity': 1.0, 'z-index':5 };
-		
-			$(this).transition(outAnim,270);
-			
-			var left=0;			
-			div.find('li').each(function(ind, elem){ 	
-				var $this = $(this)
-				$this.transition({left: left + 'px',top : 0}, 100);
-				left += $this.outerWidth(true);
-			});
-					
-		}		
-		else {  													// for difficulty setting 0
-			
-			$(this).transition(outAnim,240, function () {       // auto color lis when difficulty set to 0 - Senner
-				if (!!o.autoValidate) {
-					o.autoValidate();	 						// calls the autovalidate function in the plugin calling script
-				}
-			});
+		if (trigger) {
+			//console.log(adjacentParentId[elt.insertPos -1].pos.top)
+			var animateToPos = (elt.insertPos == adjacentParentId.length ? adjacentParentId[elt.insertPos -1].pos.top + adjacentParentId[elt.insertPos -1].completeHeight: adjacentParentId[elt.insertPos].pos.top - elt.completeHeight) 
+
+			var animateBack = {left: adjacentDir, top : animateToPos, x:  ui.position.left - adjacentDir, y:  ui.position.top - animateToPos }	
+		} else { 
+			var animateBack = {left: elt.pos.left, top : elt.pos.top, x:  ui.position.left - elt.pos.left, y:  ui.position.top - elt.pos.top }
 		}
+		
+		elt.transition(animateBack,0, function () {
+		
+			if (o.setChars)	{										// re-align lis after uppercase/lowercase for difficulty setting  2	
+			
+				outAnim = { x: 0, y: 0, 'opacity': 1.0, 'z-index':5 };
+			
+				$(this).transition(outAnim,270);
+				
+				var left=0;			
+				div.find('li').each(function(ind, elem){ 	
+					var $this = $(this)
+					$this.transition({left: left + 'px',top : 0}, 100);
+					left += $this.outerWidth(true);
+				});
+						
+			}		
+			else {  													// for difficulty setting 0
+				
+				$(this).transition(outAnim,240, function () {       // auto color lis when difficulty set to 0 - Senner
+					if (!!o.autoValidate) {
+						o.autoValidate();	 						// calls the autovalidate function in the plugin calling script
+						
+					}
+					  if (trigger) {
+						
+						elt.hide();
+						adjacentParentId[0].parents(':eq(1)').jumbleScramble('add', elt.text(), elt.insertPos);
+						//$(".jMyPuzzle").eq(1).find('li').eq(elt.insertPos).css('opacity',1)
+						
+						trigger = false;
+						//console.log(adjacentParentId)
+					}  
+				});
+			}
 		});
 	};
 	
@@ -341,7 +368,7 @@
 	
 	
 	JumbleScramble.prototype.addLiElem = function () {								// Add new li to previous collection
-		
+			
 		 	var div = $(this.element), ul = $("ul", div), divId = div.attr('id'), n= Math.min(Math.max(parseInt(this.liPosition), 0), eltsObject[divId].length);
 			o = eltsObject[divId][0].o;		
 	
@@ -373,6 +400,16 @@
 		
 			var $thisWidth = (o.isHorizontal ? 0: elt.outerWidth(true));
 			var $thisHeight = elt.outerHeight(true);
+			
+			if (trigger) {
+				for(var i = 0; i < adjacentParentId.length; i++){
+					var style = window.getComputedStyle(adjacentParentId[i].get(0));  // Need the DOM object
+					var matrix = new WebKitCSSMatrix(style.webkitTransform);
+
+					if (matrix.m42 != 0) {adjacentParentId[i].transition({y:0},0)} 
+				}
+			}
+			
 			ul.find('li').eq(n).nextAll().css({
 				'left': '+=' + $thisWidth + 'px',
 				'top' : '+=' + $thisHeight + 'px'
@@ -382,19 +419,18 @@
 				'height' : parseInt( ul.css('height')) + parseInt($thisHeight) + 'px'
 				
 			})
-			
-			
-			
+					
 			addToObject(eltsObject, divId, elt, n, $thisHeight, $thisWidth, o)
 			addHandlers(eltsObject, divId, elt, o, div);
 			
+			
 			for (var i=0;i<tempArr.length;i++) { 
 				tempArr[i].pos.left = tempArr[i][0].offsetLeft;
-				tempArr[i].pos.top = tempArr[i][0].offsetTop;
+				tempArr[i].pos.top =  tempArr[i][0].offsetTop;							
 				tempArr[i].n = n + i+1;
 				eltsObject[divId][n + 1 + i] = tempArr[i];			
 			}
-					
+				
 	}
 
 	JumbleScramble.prototype.removeLiElem = function () {							// Remove new li to previous collection

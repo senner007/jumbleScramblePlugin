@@ -60,8 +60,8 @@ var $h1 = $('h1');
 				isHorizontal: isHorizotal,
 				layoutComplete: function () {	
 				
-						/* $(".jMyPuzzle").eq(0).jumbleScramble('add', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam et mi sapien.', 3) 
-						$(".jMyPuzzle").eq(1).jumbleScramble('add', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam et mi sapien.', 3)  */
+						 $(".jMyPuzzle").eq(0).jumbleScramble('add', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam et mi sapien.', 3) 
+						//$(".jMyPuzzle").eq(1).jumbleScramble('add', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam et mi sapien.', 3)  
 				}						
 			});	
 

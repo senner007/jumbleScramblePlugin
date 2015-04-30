@@ -102,21 +102,21 @@ margin-left: 4px;
 #container {  
 
 margin: auto;
-height: 600px;
+height: 800px;
 
 }
 
 #allLists {
 position: absolute;
 width: inherit;
-height: 430px;
+height: 800px;
 margin-top: 70px;
 
 }
 
 #staticList {
 position: absolute;
-height: inherit;
+height:800px;
 width: 495px;
 }
 
@@ -140,14 +140,14 @@ text-align: right;
 #answerList {
 margin-left: 495px;
 position: absolute;
-height: inherit;
+height: 630px;
 width: 495px;
 }
 
 
 div.jMyPuzzle {
 width: 495px;
-height: 430px;
+height: 630px;
 position: absolute;
 
    
