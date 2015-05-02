@@ -82,8 +82,7 @@
 	} */
  	
 	
-	var nToAnimate
-	var tempArray 
+
 	
 	var trigger = false;
 	
@@ -94,12 +93,18 @@
 		var oldPos = (thisElt.eltPos != null ? thisElt.eltPos : ui.position); 			//find the old position stored on the $object 
 		thisElt.eltPos = ui.position;													//its current position derived from $draggable object		
 			
-		adjacentParentId = (elt.belongsTo % 2 == 0 && Object.keys(elts).length > 1 ?  instanceArr[elt.belongsTo +1].elts : instanceArr[elt.belongsTo -1].elts);
-		adjacentDir = adjacentParentId[0].parent().offset().left -  elt.parent().offset().left;	
-		var dirSwitch = (elt.belongsTo % 2 == 0 ? thisElt.eltPos.left > adjacentDir/2 : thisElt.eltPos.left < adjacentDir/2);  
-
+		//console.log(elt.belongsTo % 2 == 0)	
+		if (instanceArr.length > 1) {
+			var adjConN = elt.belongsTo % 2 == 0 ? elt.belongsTo +1 : elt.belongsTo -1;
+			//console.log(instanceArr[adjConN].div.offset())
+			
+			adjacentParentId = (elt.belongsTo % 2 == 0 ?  instanceArr[adjConN].elts : instanceArr[adjConN].elts);
+			adjacentDir = instanceArr[adjConN].div.offset().left -  elt.parent().offset().left;	
+			var dirSwitch = (elt.belongsTo % 2 == 0 ? thisElt.eltPos.left > adjacentDir/2 : thisElt.eltPos.left < adjacentDir/2);  
+		
+		}
 	
-		if (dirSwitch && trigger == false && Object.keys(elts).length > 1) {								// trigger animations for adjacent container
+		if (dirSwitch && trigger == false) {								// trigger animations for adjacent container
 
 			trigger = true;
 			var tempArr = []
@@ -109,6 +114,7 @@
 							
 						if (obj.moved == false) {
 							tempArr.push(i)
+							//console.log(tempArr)
 							obj.transition({y: '+=' + elt.completeHeight}, 250)
 							obj.moved = true;
 							elt.insertPos = obj.n;
@@ -316,7 +322,7 @@
 			}
 			
 	
-			var animateToPos = (elt.insertPos == adjacentParentId.length ? adjacentParentId[elt.insertPos -1].pos.top + adjacentParentId[elt.insertPos -1].completeHeight: adjacentParentId[elt.insertPos].pos.top - elt.completeHeight);
+			var animateToPos = elt.insertPos == adjacentParentId.length && elt.insertPos > 0? adjacentParentId[elt.insertPos -1].pos.top + adjacentParentId[elt.insertPos -1].completeHeight: elt.insertPos == 0 ? 0 :adjacentParentId[elt.insertPos].pos.top - elt.completeHeight;
 			var animateBack = {left: adjacentDir, top : animateToPos, x:  ui.position.left - adjacentDir, y:  ui.position.top - animateToPos }	
 		} 
 		else { 
@@ -468,7 +474,11 @@
 				'left': allBeforeWidth + 'px', 
 				'top' : allBeforeHeight + 'px'
 			}
-			if (n > 0 ? elt.insertAfter( thisElts[n-1]).css(eltObj) : elt.insertBefore( thisElts[n]).css(eltObj) );
+			
+			if (thisElts.length == 0) {elt.css(eltObj).appendTo(ul)} 							// if there are no elements present at drop
+			else (n > 0 ? elt.insertAfter( thisElts[n-1]).css(eltObj) : elt.insertBefore( thisElts[n]).css(eltObj) );
+			
+			
 			
 			var $thisWidth = (o.isVertical ? 0: elt.outerWidth(true));
 			var $thisHeight = elt.outerHeight(true);
