@@ -17,8 +17,9 @@
 			eltsObject[divId][n].initialN = n;														// its initial position (as per the other elements)
 			eltsObject[divId][n].n = n;																// its current position (as per the other elements)
 			eltsObject[divId][n].o = o;																// its current position (as per the other elements)
-			eltsObject[divId][n].moved = false;	
-			eltsObject[divId][n].belongsTo = thisContainer;	
+			eltsObject[divId][n].moved = false;			
+			eltsObject[divId][n].belongsTo = thisContainer;		
+			eltsObject[divId][n].belongsToId = divId;			
 	};
 	
 	function addHandlers(eltsObject, divId, elt, o, div) {
@@ -276,25 +277,31 @@
 		var	outAnim = ( o.isVertical && transSupport ? ({x: 0, y: 0, 'box-shadow': 'none'}) : ({ x: 0, y: 0, 'opacity': 1.0, 'z-index':5 }) );
 
 		if (o.setChars) {	 setChars(div);	}			// calls the setChars function	
+		console.log(elt)
 		
-		if (trigger) {
-			var $thisWidth = (o.isVertical ? 0: elt.outerWidth(true));
-			var $thisHeight = elt.outerHeight(true);
-			elt.parent().find('li').eq(elt.index()).nextAll().animate({
-				'left': '-=' + $thisWidth + 'px',
-				'top' : '-=' + $thisHeight + 'px',
-				x: '+=' + $thisWidth,
-				y: '+=' + $thisHeight
+		if (trigger) {													// animate lis in previous container.
+			var $thisWidth = (o.isVertical ? 0: elt.completeWidth);
+			var $thisHeight = elt.completeHeight;
+			
+			
+			for (var i=elt.index() +1;i<eltsObject[elt.belongsToId].length;i++) { 
+					eltsObject[elt.belongsToId][i].animate({
+					'left': '-=' + $thisWidth + 'px',
+					'top' : '-=' + $thisHeight + 'px',
+					x: '+=' + $thisWidth,
+					y: '+=' + $thisHeight
 				},0).promise().done(function () {
-					$(this).animate({x: 0, y: 0}, 200)					
-				});
+				
+					$(this).transit({x: 0, y: 0}, 200)					
+				});	
+				
+			}
 			
-			
-		
-			var animateToPos = (elt.insertPos == adjacentParentId.length ? adjacentParentId[elt.insertPos -1].pos.top + adjacentParentId[elt.insertPos -1].completeHeight: adjacentParentId[elt.insertPos].pos.top - elt.completeHeight) 
-
+	
+			var animateToPos = (elt.insertPos == adjacentParentId.length ? adjacentParentId[elt.insertPos -1].pos.top + adjacentParentId[elt.insertPos -1].completeHeight: adjacentParentId[elt.insertPos].pos.top - elt.completeHeight);
 			var animateBack = {left: adjacentDir, top : animateToPos, x:  ui.position.left - adjacentDir, y:  ui.position.top - animateToPos }	
-		} else { 
+		} 
+		else { 
 			var animateBack = {left: elt.pos.left, top : elt.pos.top, x:  ui.position.left - elt.pos.left, y:  ui.position.top - elt.pos.top }
 		}
 		
@@ -322,7 +329,7 @@
 						
 					}
 					  if (trigger) {						
-						instanceArr[dropInContainer].addLiElem(elt.text(), elt.insertPos);
+						instanceArr[dropInContainer].addLiElem(elt[0].innerText, elt.insertPos);
 						instanceArr[elt.belongsTo].removeLiElem(elt)
 						trigger = false;
 					}  
@@ -377,8 +384,8 @@
 			var elt = arguments[0];
 			var n = elt.index();
 			var tempArr = [];
-			var $thisWidth = (o.isVertical ? 0: elt.outerWidth(true));
-			var $thisHeight = elt.outerHeight(true);
+			var $thisWidth = (o.isVertical ? 0: elt.completeWidth);
+			var $thisHeight = elt.completeHeight;
 			var dropInContainer = (elt.belongsTo % 2 == 0 ? elt.belongsTo +1 : elt.belongsTo - 1);
 			
 			for (var i=0;i<eObjId.length;i++) { 
