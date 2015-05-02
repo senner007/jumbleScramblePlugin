@@ -10,7 +10,6 @@
 	function addToObject(thisElts, elt, n, $thisHeight, $thisWidth, o, thisContainer) {
 			
 		
-
 			thisElts[n] = elt;
 			thisElts[n].completeWidth = $thisWidth || 0;								// its size (with the margin)
 			thisElts[n].completeHeight = $thisHeight || 0;							// its height (with the margin)
@@ -60,7 +59,7 @@
 		elt.css(inAnim);
 	};
 	
-	function closest(arr, closestTo){
+	/* function closest(arr, closestTo){
 
 		var closest = Math.max.apply(null, arr); //Get the highest number in arr in case it match nothing.
 
@@ -70,7 +69,7 @@
 	
 		return closest; // return the value
 	}
-	
+	 */
 	/* function closest2(arr, closestTo){
 
 		var closest = Math.min.apply(null, arr); //Get the highest number in arr in case it match nothing.
@@ -103,7 +102,25 @@
 		if (dirSwitch && trigger == false && Object.keys(elts).length > 1) {								// trigger animations for adjacent container
 
 			trigger = true;
-		 	tempArray = [];
+			var tempArr = []
+			for(var i = 0; i < adjacentParentId.length; i++){ 			//Loop the array
+					var obj = adjacentParentId[i]
+					if (ui.position.top  < obj.pos.top + obj.completeHeight/2) {
+							
+						if (obj.moved == false) {
+							tempArr.push(i)
+							obj.transition({y: '+=' + elt.completeHeight}, 250)
+							obj.moved = true;
+							elt.insertPos = obj.n;
+							obj.pos.top = obj.pos.top + elt.completeHeight;
+							
+						
+						};
+					};
+				};
+			elt.insertPos = tempArr[0] || adjacentParentId.length
+
+		 	/* tempArray = [];
 			
 			for(var i = 0; i < adjacentParentId.length; i++){ 						//Loop the array			
 					tempArray.push(Math.abs(adjacentParentId[i].pos.top))	
@@ -119,7 +136,7 @@
 						objectNumber.pos.top = objectNumber.pos.top + elt.completeHeight;												
 				}			
 			}	 	
-			elt.insertPos = adjacentParentId[nToAnimate].n		
+			elt.insertPos = adjacentParentId[nToAnimate].n		 */
 				
 		};
 		if (!dirSwitch && trigger == true && Object.keys(elts).length > 1) {											// go back to original container
