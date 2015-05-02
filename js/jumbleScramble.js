@@ -277,7 +277,6 @@
 		var	outAnim = ( o.isVertical && transSupport ? ({x: 0, y: 0, 'box-shadow': 'none'}) : ({ x: 0, y: 0, 'opacity': 1.0, 'z-index':5 }) );
 
 		if (o.setChars) {	 setChars(div);	}			// calls the setChars function	
-		console.log(elt)
 		
 		if (trigger) {													// animate lis in previous container.
 			var $thisWidth = (o.isVertical ? 0: elt.completeWidth);
@@ -328,8 +327,9 @@
 						o.autoValidate();	 						// calls the autovalidate function in the plugin calling script
 						
 					}
+					console.log(elt)
 					  if (trigger) {						
-						instanceArr[dropInContainer].addLiElem(elt[0].innerText, elt.insertPos);
+						instanceArr[dropInContainer].addLiElem(elt[0].textContent, elt.insertPos);
 						instanceArr[elt.belongsTo].removeLiElem(elt)
 						trigger = false;
 					}  
