@@ -327,11 +327,12 @@
 						o.autoValidate();	 						// calls the autovalidate function in the plugin calling script
 						
 					}
-					console.log(elt)
+					
 					  if (trigger) {						
 						instanceArr[dropInContainer].addLiElem(elt[0].textContent, elt.insertPos);
-						instanceArr[elt.belongsTo].removeLiElem(elt)
 						trigger = false;
+						instanceArr[elt.belongsTo].removeLiElem(elt)
+						
 					}  
 				});
 			}
