@@ -118,8 +118,8 @@
 						};
 					};
 				};
-			elt.insertPos = tempArr[0] || adjacentParentId.length
-
+			elt.insertPos = tempArr[0] >= 0 ? tempArr[0] : adjacentParentId.length;
+			console.log(elt.insertPos)
 		 	/* tempArray = [];
 			
 			for(var i = 0; i < adjacentParentId.length; i++){ 						//Loop the array			
