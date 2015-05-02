@@ -271,14 +271,26 @@
 
 	
 	function onStop(evt, ui, elt, div, o)	{									// Stop
-		var dropInContainer = (elt.belongsTo % 2 == 0 ? elt.belongsTo +1 : elt.belongsTo - 1); 	//find out if dropped elt belongs to even or odd container and select opposite
 	
+		var dropInContainer = (elt.belongsTo % 2 == 0 ? elt.belongsTo +1 : elt.belongsTo - 1); 	//find out if dropped elt belongs to even or odd container and select opposite
 		var	outAnim = ( o.isVertical && transSupport ? ({x: 0, y: 0, 'box-shadow': 'none'}) : ({ x: 0, y: 0, 'opacity': 1.0, 'z-index':5 }) );
 
 		if (o.setChars) {	 setChars(div);	}			// calls the setChars function	
 		
 		if (trigger) {
-			//console.log(adjacentParentId[elt.insertPos -1].pos.top)
+			var $thisWidth = (o.isVertical ? 0: elt.outerWidth(true));
+			var $thisHeight = elt.outerHeight(true);
+			elt.parent().find('li').eq(elt.index()).nextAll().animate({
+				'left': '-=' + $thisWidth + 'px',
+				'top' : '-=' + $thisHeight + 'px',
+				x: '+=' + $thisWidth,
+				y: '+=' + $thisHeight
+				},0).promise().done(function () {
+					$(this).animate({x: 0, y: 0}, 200)					
+				});
+			
+			
+		
 			var animateToPos = (elt.insertPos == adjacentParentId.length ? adjacentParentId[elt.insertPos -1].pos.top + adjacentParentId[elt.insertPos -1].completeHeight: adjacentParentId[elt.insertPos].pos.top - elt.completeHeight) 
 
 			var animateBack = {left: adjacentDir, top : animateToPos, x:  ui.position.left - adjacentDir, y:  ui.position.top - animateToPos }	
@@ -309,18 +321,10 @@
 						o.autoValidate();	 						// calls the autovalidate function in the plugin calling script
 						
 					}
-					  if (trigger) {
-						
-						//
-						console.time(name)
-						instanceArr[dropInContainer].addLiElem(elt.text(), elt.insertPos)
+					  if (trigger) {						
+						instanceArr[dropInContainer].addLiElem(elt.text(), elt.insertPos);
 						instanceArr[elt.belongsTo].removeLiElem(elt)
-						console.timeEnd(name)
-				
-						
-						
 						trigger = false;
-						//console.log(adjacentParentId)
 					}  
 				});
 			}
@@ -366,47 +370,32 @@
 
 	JumbleScramble.prototype.removeLiElem = function () {							// Remove new li to previous collection
 		
-		
-		var div = this.div; 
 			var ul = this.ul; 
 			var divId = this.divId;
 			var eObjId = eltsObject[divId];	
 			var o = this.options;
 			var elt = arguments[0];
 			var n = elt.index();
-			var thisContainer = this.container;
-			var allBeforeWidth = 0;
-			var allBeforeHeight = 0;
 			var tempArr = [];
 			var $thisWidth = (o.isVertical ? 0: elt.outerWidth(true));
 			var $thisHeight = elt.outerHeight(true);
 			var dropInContainer = (elt.belongsTo % 2 == 0 ? elt.belongsTo +1 : elt.belongsTo - 1);
 			
-			console.log(elt.text())
 			for (var i=0;i<eObjId.length;i++) { 
-				if (i <= n ) {
-					allBeforeWidth += eObjId[i].completeWidth;
-					allBeforeHeight += eObjId[i].completeHeight;
-					
-				}	
-				else {	
-				tempArr.push(eObjId[i])	
-				
+				if (i > n ) {
+					tempArr.push(eObjId[i])	
 				}
 			}
-			
-			//delete eObjId[n];
 			var eObjIdLenght = eObjId.length -1
-			ul.find('li').eq(n).nextAll().animate({
+			
+			/* ul.find('li').eq(n).nextAll().animate({
 				'left': '-=' + $thisWidth + 'px',
 				'top' : '-=' + $thisHeight + 'px',
 				x: '+=' + $thisWidth,
 				y: '+=' + $thisHeight
 				},0).promise().done(function () {
-					console.log('animating')
-					$(this).animate({x: 0, y: 0}, 200)
-					
-				});
+					$(this).animate({x: 0, y: 0}, 200)					
+				}); */
 			ul.css({
 				'width' : parseInt( ul.css('width')) - parseInt($thisWidth) + 'px',
 				'height' : parseInt( ul.css('height')) - parseInt($thisHeight) + 'px'
@@ -418,20 +407,11 @@
 				tempArr[i].pos.top =  tempArr[i][0].offsetTop;							
 				tempArr[i].n = tempArr[i].n -1;
 				eObjId[n + i] = tempArr[i];
-				
-				//				
-				
+
 			}
 			delete eObjId[eObjId.length -1]
 			eObjId.length = eObjIdLenght
-			elt.remove()
-			console.log(eltsObject)
-			
-			
-			
-			
-			
-			
+			elt.remove()		
 			
 	};	
 	
@@ -452,6 +432,9 @@
 			
 			for (var i=0;i<eObjId.length;i++) { 
 				eObjId[i].moved = false;
+				if (trigger) {
+					eObjId[i].transition({y:0},0)  
+				}
 				if (i < n ) {
 					allBeforeWidth += eObjId[i].completeWidth;
 					allBeforeHeight += eObjId[i].completeHeight;
@@ -467,15 +450,7 @@
 			
 			var $thisWidth = (o.isVertical ? 0: elt.outerWidth(true));
 			var $thisHeight = elt.outerHeight(true);
-			
-			if (trigger) {
-				for(var i = 0; i < adjacentParentId.length; i++){
-					var style = window.getComputedStyle(adjacentParentId[i].get(0));  
-					var matrix = new WebKitCSSMatrix(style.webkitTransform);
-
-					if (matrix.m42 != 0) {adjacentParentId[i].transition({y:0},0)} 
-				}
-			}
+					
 			
 			ul.find('li').eq(n).nextAll().css({
 				'left': '+=' + $thisWidth + 'px',
@@ -497,7 +472,7 @@
 				tempArr[i].n = n + i+1;
 				eObjId[n + 1 + i] = tempArr[i];			
 			}
-				
+			return elt;	
 	}
 
 	
