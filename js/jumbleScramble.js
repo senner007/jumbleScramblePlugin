@@ -7,22 +7,24 @@
 		return support;
 	})();
 	
-	function addToObject(eltsObject, divId, elt, n, $thisHeight, $thisWidth, o, thisContainer) {
+	function addToObject(thisElts, elt, n, $thisHeight, $thisWidth, o, thisContainer) {
 			
-			eltsObject[divId][n] = elt;
-			eltsObject[divId][n].completeWidth = $thisWidth || 0;								// its size (with the margin)
-			eltsObject[divId][n].completeHeight = $thisHeight || 0;							// its height (with the margin)
-			eltsObject[divId][n].pos = getOffset(elt);												// its position (left and top position)
-			o.isVertical == true  ? eltsObject[divId][n].pos.left = 0: eltsObject[divId][n].pos.left = eltsObject[divId][n].pos.left;
-			eltsObject[divId][n].initialN = n;														// its initial position (as per the other elements)
-			eltsObject[divId][n].n = n;																// its current position (as per the other elements)
-			eltsObject[divId][n].o = o;																// its current position (as per the other elements)
-			eltsObject[divId][n].moved = false;			
-			eltsObject[divId][n].belongsTo = thisContainer;		
-			eltsObject[divId][n].belongsToId = divId;			
+		
+
+			thisElts[n] = elt;
+			thisElts[n].completeWidth = $thisWidth || 0;								// its size (with the margin)
+			thisElts[n].completeHeight = $thisHeight || 0;							// its height (with the margin)
+			thisElts[n].pos = getOffset(elt);												// its position (left and top position)
+			o.isVertical == true  ? thisElts[n].pos.left = 0: thisElts[n].pos.left = thisElts[n].pos.left;
+			thisElts[n].initialN = n;														// its initial position (as per the other elements)
+			thisElts[n].n = n;																// its current position (as per the other elements)
+			thisElts[n].o = o;																// its current position (as per the other elements)
+			thisElts[n].moved = false;			
+			thisElts[n].belongsTo = thisContainer;		
+
 	};
 	
-	function addHandlers(eltsObject, divId, elt, o, div) {
+	function addHandlers(thisElts, elt, o, div) {
 			var parentContainment = ( $('#frame').length ? $('#frame') : div );		// use '.#frame' if it exists
 			if (o.isVertical ? axis = 'y' : axis = 'false')
 			elt.draggable({															// make the element draggable
@@ -31,7 +33,7 @@
 				//axis: axis,
 				containment: 'html',
 				cancel: '.locked',
-				drag: function(evt, ui){ onDrag(evt, ui, elt, eltsObject[divId], o);}, 			
+				drag: function(evt, ui){ onDrag(evt, ui, elt, thisElts, o);}, 			
 				start: function(evt, ui){ onStart(elt, o); },								
 				stop:function(evt, ui){ onStop(evt, ui, elt, div, o);}
 			});
@@ -92,14 +94,14 @@
 																				//occurrences of non-moving elements in safari iPad.
 		var oldPos = (thisElt.eltPos != null ? thisElt.eltPos : ui.position); 			//find the old position stored on the $object 
 		thisElt.eltPos = ui.position;													//its current position derived from $draggable object		
-
-		adjacentParentId = (elt.belongsTo % 2 == 0 && Object.keys(eltsObject).length > 1 ?  eltsObject.jMyPuzzleId1 : eltsObject.jMyPuzzleId0);
+			
+		adjacentParentId = (elt.belongsTo % 2 == 0 && Object.keys(elts).length > 1 ?  instanceArr[elt.belongsTo +1].elts : instanceArr[elt.belongsTo -1].elts);
 		adjacentDir = adjacentParentId[0].parent().offset().left -  elt.parent().offset().left;	
 		var dirSwitch = (elt.belongsTo % 2 == 0 ? thisElt.eltPos.left > adjacentDir/2 : thisElt.eltPos.left < adjacentDir/2);  
 
 	
-		if (dirSwitch && trigger == false && Object.keys(eltsObject).length > 1) {								// trigger animations for adjacent container
-		//	console.log('hello')
+		if (dirSwitch && trigger == false && Object.keys(elts).length > 1) {								// trigger animations for adjacent container
+
 			trigger = true;
 		 	tempArray = [];
 			
@@ -120,7 +122,7 @@
 			elt.insertPos = adjacentParentId[nToAnimate].n		
 				
 		};
-		if (!dirSwitch && trigger == true && Object.keys(eltsObject).length > 1) {											// go back to original container
+		if (!dirSwitch && trigger == true && Object.keys(elts).length > 1) {											// go back to original container
 			
 			trigger = false;
 			
@@ -282,9 +284,9 @@
 			var $thisWidth = (o.isVertical ? 0: elt.completeWidth);
 			var $thisHeight = elt.completeHeight;
 			
-			
-			for (var i=elt.index() +1;i<eltsObject[elt.belongsToId].length;i++) { 
-					eltsObject[elt.belongsToId][i].animate({
+			console.log(instanceArr[elt.belongsTo].elts)
+			for (var i=elt.index() +1;i<instanceArr[elt.belongsTo].elts.length;i++) { 
+					$(instanceArr[elt.belongsTo].elts[i][0]).animate({
 					'left': '-=' + $thisWidth + 'px',
 					'top' : '-=' + $thisHeight + 'px',
 					x: '+=' + $thisWidth,
@@ -329,10 +331,10 @@
 					}
 					
 					  if (trigger) {						
-						instanceArr[dropInContainer].addLiElem(elt[0].textContent, elt.insertPos);
+						instanceArr[dropInContainer].addLiElem(elt.text(), elt.insertPos);
 						trigger = false;
 						instanceArr[elt.belongsTo].removeLiElem(elt)
-						
+						console.log(instanceArr[dropInContainer])
 					}  
 				});
 			}
@@ -353,15 +355,12 @@
 		layoutComplete: function () {}
 	}
 	
-	var eltsObject = {};											// object used for storing and updating data on each ul array with lis
+
 	
 	var conCount = 0;
 	function JumbleScramble(element, options) {					// Constructor function 
 	
-		this.element = element;
-		this.div = $(this.element);
-		this.ul = $("ul", this.div);
-		this.divId = this.div.attr('id');
+		this.div = $(element);
 		this.container = conCount;
 		conCount++;
 	
@@ -378,23 +377,21 @@
 
 	JumbleScramble.prototype.removeLiElem = function () {							// Remove new li to previous collection
 		
-			var ul = this.ul; 
-			var divId = this.divId;
-			var eObjId = eltsObject[divId];	
+			var ul = $("ul", this.div); 
 			var o = this.options;
 			var elt = arguments[0];
 			var n = elt.index();
+			var thisElts = this.elts;
 			var tempArr = [];
 			var $thisWidth = (o.isVertical ? 0: elt.completeWidth);
 			var $thisHeight = elt.completeHeight;
-			var dropInContainer = (elt.belongsTo % 2 == 0 ? elt.belongsTo +1 : elt.belongsTo - 1);
-			
-			for (var i=0;i<eObjId.length;i++) { 
+			var dropInContainer = (elt.belongsTo % 2 == 0 ? elt.belongsTo +1 : elt.belongsTo - 1);		
+			for (var i=0;i<thisElts.length;i++) { 
 				if (i > n ) {
-					tempArr.push(eObjId[i])	
+					tempArr.push(thisElts[i])	
 				}
 			}
-			var eObjIdLenght = eObjId.length -1
+			var eObjIdLenght = thisElts.length -1
 			
 			/* ul.find('li').eq(n).nextAll().animate({
 				'left': '-=' + $thisWidth + 'px',
@@ -414,11 +411,11 @@
 				tempArr[i].pos.left = tempArr[i][0].offsetLeft;
 				tempArr[i].pos.top =  tempArr[i][0].offsetTop;							
 				tempArr[i].n = tempArr[i].n -1;
-				eObjId[n + i] = tempArr[i];
+				thisElts[n + i] = tempArr[i];
 
 			}
-			delete eObjId[eObjId.length -1]
-			eObjId.length = eObjIdLenght
+			delete thisElts[thisElts.length -1]
+			thisElts.length = eObjIdLenght
 			elt.remove()		
 			
 	};	
@@ -427,10 +424,9 @@
 	JumbleScramble.prototype.addLiElem = function (liText, liPosition) {								// Add new li to previous collection
 			
 		 	var div = this.div; 
-			var ul = this.ul; 
-			var divId = this.divId;
-			var eObjId = eltsObject[divId];
-			var n = Math.min(Math.max(parseInt(liPosition), 0), eObjId.length);
+			var ul = $("ul", div); 
+			var thisElts = this.elts;
+			var n = Math.min(Math.max(parseInt(liPosition), 0), thisElts.length);
 			var o = this.options;
 			var elt = $("<li class='listItem'>" + liText + "</li>");
 			var thisContainer = this.container;
@@ -438,23 +434,24 @@
 			var allBeforeHeight = 0;
 			var tempArr = [];
 			
-			for (var i=0;i<eObjId.length;i++) { 
-				eObjId[i].moved = false;
+			
+			for (var i=0;i<thisElts.length;i++) { 
+				thisElts[i].moved = false;
 				if (trigger) {
-					eObjId[i].transition({y:0},0)  
+					thisElts[i].transition({y:0},0)  
 				}
 				if (i < n ) {
-					allBeforeWidth += eObjId[i].completeWidth;
-					allBeforeHeight += eObjId[i].completeHeight;
+					allBeforeWidth += thisElts[i].completeWidth;
+					allBeforeHeight += thisElts[i].completeHeight;
 				}	
-				else {	tempArr.push(eObjId[i])	}
+				else {	tempArr.push(thisElts[i])	}
 			}
 			
 			var eltObj = {
 				'left': allBeforeWidth + 'px', 
 				'top' : allBeforeHeight + 'px'
 			}
-			if (n > 0 ? elt.insertAfter( eObjId[n-1]).css(eltObj) : elt.insertBefore( eObjId[n]).css(eltObj) );
+			if (n > 0 ? elt.insertAfter( thisElts[n-1]).css(eltObj) : elt.insertBefore( thisElts[n]).css(eltObj) );
 			
 			var $thisWidth = (o.isVertical ? 0: elt.outerWidth(true));
 			var $thisHeight = elt.outerHeight(true);
@@ -470,15 +467,15 @@
 				
 			})
 					
-			addToObject(eltsObject, divId, elt, n, $thisHeight, $thisWidth, o, thisContainer)
-			addHandlers(eltsObject, divId, elt, o, div);
+			addToObject(thisElts, elt, n, $thisHeight, $thisWidth, o, thisContainer)
+			addHandlers(thisElts, elt, o, div);
 			
 			
 			for (var i=0;i<tempArr.length;i++) { 
 				tempArr[i].pos.left = tempArr[i][0].offsetLeft;
 				tempArr[i].pos.top =  tempArr[i][0].offsetTop;							
 				tempArr[i].n = n + i+1;
-				eObjId[n + 1 + i] = tempArr[i];			
+				thisElts[n + 1 + i] = tempArr[i];			
 			}
 			return elt;	
 	}
@@ -489,11 +486,12 @@
 	JumbleScramble.prototype.init = function () {
 		
 		var o = this.options; 
-		var div = this.div, ul = this.ul, li = $("li", ul), divId = this.divId;						// Variables declaration
+		var div = this.div, ul = $("ul", div), li = $("li", ul);					// Variables declaration
 		var left=0, top = 0, n = 0, ulSize = 0;	
 		var thisContainer = this.container;	
-		eltsObject[(divId.toString())] = new Array(li.size());
-	
+		this.elts = new Array(li.size());
+		var thisElts = this.elts;
+		
 		li.each(function(liInd, liElem){ 											// Loop over each li, position, store object data and bind draggable handlers. 
 			var elt = $(this);	
 			
@@ -512,8 +510,8 @@
 				ulSize += $thisWidth; 												// calculate the size of the ul element				
 			}	
 			
-			addToObject(eltsObject, divId, elt, n, $thisHeight, $thisWidth, o, thisContainer);		
-			addHandlers(eltsObject, divId, elt, o, div);			
+			addToObject(thisElts, elt, n, $thisHeight, $thisWidth, o, thisContainer);		
+			addHandlers(thisElts, elt, o, div);			
 			n = n+1;		
 		});
 			
@@ -546,8 +544,8 @@
 				
 				instanceArr.push(new JumbleScramble(this, options, arg1, arg2)) 	
 			}).promise().done(function (){
-				if (!!options.layoutComplete )options.layoutComplete();
-					//console.log(instanceArr)
+				if (!!options.layoutComplete )options.layoutComplete(instanceArr);
+				
 			});			
 		}
 	
