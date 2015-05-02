@@ -98,18 +98,18 @@
 			var adjConN = elt.belongsTo % 2 == 0 ? elt.belongsTo +1 : elt.belongsTo -1;
 			//console.log(instanceArr[adjConN].div.offset())
 			
-			adjacentParentId = (elt.belongsTo % 2 == 0 ?  instanceArr[adjConN].elts : instanceArr[adjConN].elts);
+			adjConElts = (elt.belongsTo % 2 == 0 ?  instanceArr[adjConN].elts : instanceArr[adjConN].elts);
 			adjacentDir = instanceArr[adjConN].div.offset().left -  elt.parent().offset().left;	
 			var dirSwitch = (elt.belongsTo % 2 == 0 ? thisElt.eltPos.left > adjacentDir/2 : thisElt.eltPos.left < adjacentDir/2);  
 		
 		}
-	
+		
 		if (dirSwitch && trigger == false) {								// trigger animations for adjacent container
 
 			trigger = true;
 			var tempArr = []
-			for(var i = 0; i < adjacentParentId.length; i++){ 			//Loop the array
-					var obj = adjacentParentId[i]
+			for(var i = 0; i < adjConElts.length; i++){ 			//Loop the array
+					var obj = adjConElts[i]
 					if (ui.position.top  < obj.pos.top + obj.completeHeight/2) {
 							
 						if (obj.moved == false) {
@@ -124,17 +124,17 @@
 						};
 					};
 				};
-			elt.insertPos = tempArr[0] >= 0 ? tempArr[0] : adjacentParentId.length;
+			elt.insertPos = tempArr[0] >= 0 ? tempArr[0] : adjConElts.length;
 			console.log(elt.insertPos)
 		 	/* tempArray = [];
 			
-			for(var i = 0; i < adjacentParentId.length; i++){ 						//Loop the array			
-					tempArray.push(Math.abs(adjacentParentId[i].pos.top))	
+			for(var i = 0; i < adjConElts.length; i++){ 						//Loop the array			
+					tempArray.push(Math.abs(adjConElts[i].pos.top))	
 			}			
 			nToAnimate = tempArray.indexOf(closest(tempArray, thisElt.eltPos.top)); 
 			
-			for(var ind = nToAnimate; ind < adjacentParentId.length; ind++){ 						//Loop the array starting from the first element to be moved down
-				var objectNumber = adjacentParentId[ind];
+			for(var ind = nToAnimate; ind < adjConElts.length; ind++){ 						//Loop the array starting from the first element to be moved down
+				var objectNumber = adjConElts[ind];
 				
 				if (objectNumber.moved != true) {
 					objectNumber.transition({y: '+=' + elt.completeHeight},200);
@@ -142,15 +142,15 @@
 						objectNumber.pos.top = objectNumber.pos.top + elt.completeHeight;												
 				}			
 			}	 	
-			elt.insertPos = adjacentParentId[nToAnimate].n		 */
+			elt.insertPos = adjConElts[nToAnimate].n		 */
 				
 		};
 		if (!dirSwitch && trigger == true && Object.keys(elts).length > 1) {											// go back to original container
 			
 			trigger = false;
 			
-			 for(var ind = 0; ind < adjacentParentId.length; ind++){ 						//Loop the array starting from the first element to be moved down
-				var objectNumber = adjacentParentId[ind];
+			 for(var ind = 0; ind < adjConElts.length; ind++){ 						//Loop the array starting from the first element to be moved down
+				var objectNumber = adjConElts[ind];
 				
 				if (objectNumber.moved == true) {
 					objectNumber.transition({y: 0},200);
@@ -216,8 +216,8 @@
 	
 			if (trigger) {										// trigger  for animating adjacent container
 				
-				for(var i = 0; i < adjacentParentId.length; i++){ 			//Loop the array
-					var obj = adjacentParentId[i]
+				for(var i = 0; i < adjConElts.length; i++){ 			//Loop the array
+					var obj = adjConElts[i]
 					if (ui.position.top  < obj.pos.top + obj.completeHeight/2) {
 							
 						if (obj.moved == false) {
@@ -256,8 +256,8 @@
 		}
 		else if(move == 'down'){ 				//  move down	
 		    if (trigger) {										// trigger  for animating adjacent container					
-				for(var i = 0; i < adjacentParentId.length; i++){ //Loop the array
-					var obj = adjacentParentId[i]
+				for(var i = 0; i < adjConElts.length; i++){ //Loop the array
+					var obj = adjConElts[i]
 					if (ui.position.top  + elt.completeHeight > obj.pos.top + obj.completeHeight/2) {
 							
 						if (obj.moved == true) {
@@ -322,7 +322,7 @@
 			}
 			
 	
-			var animateToPos = elt.insertPos == adjacentParentId.length && elt.insertPos > 0? adjacentParentId[elt.insertPos -1].pos.top + adjacentParentId[elt.insertPos -1].completeHeight: elt.insertPos == 0 ? 0 :adjacentParentId[elt.insertPos].pos.top - elt.completeHeight;
+			var animateToPos = elt.insertPos == adjConElts.length && elt.insertPos > 0? adjConElts[elt.insertPos -1].pos.top + adjConElts[elt.insertPos -1].completeHeight: elt.insertPos == 0 ? 0 :adjConElts[elt.insertPos].pos.top - elt.completeHeight;
 			var animateBack = {left: adjacentDir, top : animateToPos, x:  ui.position.left - adjacentDir, y:  ui.position.top - animateToPos }	
 		} 
 		else { 
