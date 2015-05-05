@@ -297,8 +297,10 @@
 			
 					instanceArr[elt.movesTo].addLiElem(elt.text(), elt.insertPos);
 					trigger = false;
+					 var vdvddv = instanceArr[elt.movesTo].elts;
 					
 					instanceArr[elt.belongsTo].addLiElem( vdvddv[vdvddv.length -1].text(), 0 )
+					instanceArr[elt.movesTo].removeLiElem( vdvddv[vdvddv.length -1] ) 
 					instanceArr[elt.belongsTo].removeLiElem(elt)
 		
 					
