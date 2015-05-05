@@ -36,15 +36,10 @@ var $h1 = $('h1');
 			
 			var isVertical = true;
 			
-			if (isVertical == false) {
-				$('div .jMyPuzzle').removeAttr('style').css('height', '50px')
-				$('.listItem').css({
-					width: 'auto',
-					border: '1px solid black'
+			
+			
 					
-				})
-					
-			}
+		
 			/* else {
 				$('div .jMyPuzzle').css('height', '430px')
 				$('.splitList li').css({
@@ -54,20 +49,37 @@ var $h1 = $('h1');
 				})
 				
 			} */
-			
-			
-			$(".jMyPuzzle").jumbleScramble({
-				isVertical: isVertical,
-				layoutComplete: function (instanceArray) {	
-						console.log(instanceArray)
-						// $(".jMyPuzzle").eq(0).jumbleScramble('add', 'Lorem ipsum dolor.', 6) 
-						//$(".jMyPuzzle").eq(1).jumbleScramble('add', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam et mi sapien.', 3) 
-					//	$(".jMyPuzzle").eq(0).find('li').first().jumbleScramble('remove') 
-				}						
-			});	
-
-
+			if (isVertical == true) {
 				
+			$("#jMyPuzzleId2").remove();
+				
+			
+			$("#jMyPuzzleId0, #jMyPuzzleId1").jumbleScramble({
+					isVertical: isVertical,
+					layoutComplete: function (instanceArray) {	
+							console.log(instanceArray)
+							// $(".jMyPuzzle").eq(0).jumbleScramble('add', 'Lorem ipsum dolor.', 6) 
+							//$(".jMyPuzzle").eq(1).jumbleScramble('add', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam et mi sapien.', 3) 
+						//	$(".jMyPuzzle").eq(0).find('li').first().jumbleScramble('remove') 
+					}						
+				});	
+			}
+
+			if (isVertical == false) {
+
+			$("#jMyPuzzleId0, #jMyPuzzleId1").remove();
+			
+			$("#jMyPuzzleId2").jumbleScramble({
+					isVertical: isVertical,
+					layoutComplete: function (instanceArray) {	
+							console.log(instanceArray)
+							// $(".jMyPuzzle").eq(0).jumbleScramble('add', 'Lorem ipsum dolor.', 6) 
+							//$(".jMyPuzzle").eq(1).jumbleScramble('add', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam et mi sapien.', 3) 
+						//	$(".jMyPuzzle").eq(0).find('li').first().jumbleScramble('remove') 
+					}						
+				});	
+
+			}	
 
 			
  

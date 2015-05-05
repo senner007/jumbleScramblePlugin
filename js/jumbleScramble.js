@@ -7,7 +7,7 @@
 		return support;
 	})();
 	
-	function addToObject(thisElts, elt, n, $thisHeight, $thisWidth, o, thisContainer) {
+	function addToObject(thisElts, elt, n, $thisHeight, $thisWidth, o, thisContainer, adjCon) {
 			
 		
 			thisElts[n] = elt;
@@ -19,7 +19,8 @@
 			thisElts[n].n = n;																// its current position (as per the other elements)
 			thisElts[n].o = o;																// its current position (as per the other elements)
 			thisElts[n].moved = false;			
-			thisElts[n].belongsTo = thisContainer;		
+			thisElts[n].belongsTo = thisContainer;
+			thisElts[n].movesTo = adjCon;				
 
 	};
 	
@@ -59,30 +60,6 @@
 		elt.css(inAnim);
 	};
 	
-	/* function closest(arr, closestTo){
-
-		var closest = Math.max.apply(null, arr); //Get the highest number in arr in case it match nothing.
-
-		for(var i = 0; i < arr.length; i++){ //Loop the array
-			if(arr[i] >= closestTo && arr[i] < closest) closest = arr[i]; //Check if it's higher than your number, but lower than your closest value
-		}
-	
-		return closest; // return the value
-	}
-	 */
-	/* function closest2(arr, closestTo){
-
-		var closest = Math.min.apply(null, arr); //Get the highest number in arr in case it match nothing.
-
-		for(var i = 0; i < arr.length; i++){ //Loop the array
-			if(arr[i] >= closestTo && arr[i] < closest) closest = arr[i]; //Check if it's higher than your number, but lower than your closest value
-		}
-	
-		return closest; // return the value
-	} */
- 	
-	
-
 	
 	var trigger = false;
 	
@@ -95,11 +72,8 @@
 			
 		//console.log(elt.belongsTo % 2 == 0)	
 		if (instanceArr.length > 1) {
-			var adjConN = elt.belongsTo % 2 == 0 ? elt.belongsTo +1 : elt.belongsTo -1;
-			//console.log(instanceArr[adjConN].div.offset())
-			
-			adjConElts = (elt.belongsTo % 2 == 0 ?  instanceArr[adjConN].elts : instanceArr[adjConN].elts);
-			adjacentDir = instanceArr[adjConN].div.offset().left -  elt.parent().offset().left;	
+			adjConElts = instanceArr[elt.movesTo].elts;
+			adjacentDir = instanceArr[elt.movesTo].div.offset().left -  elt.parent().offset().left;	
 			var dirSwitch = (elt.belongsTo % 2 == 0 ? thisElt.eltPos.left > adjacentDir/2 : thisElt.eltPos.left < adjacentDir/2);  
 		
 		}
@@ -125,25 +99,6 @@
 					};
 				};
 			elt.insertPos = tempArr[0] >= 0 ? tempArr[0] : adjConElts.length;
-			console.log(elt.insertPos)
-		 	/* tempArray = [];
-			
-			for(var i = 0; i < adjConElts.length; i++){ 						//Loop the array			
-					tempArray.push(Math.abs(adjConElts[i].pos.top))	
-			}			
-			nToAnimate = tempArray.indexOf(closest(tempArray, thisElt.eltPos.top)); 
-			
-			for(var ind = nToAnimate; ind < adjConElts.length; ind++){ 						//Loop the array starting from the first element to be moved down
-				var objectNumber = adjConElts[ind];
-				
-				if (objectNumber.moved != true) {
-					objectNumber.transition({y: '+=' + elt.completeHeight},200);
-						objectNumber.moved = true;
-						objectNumber.pos.top = objectNumber.pos.top + elt.completeHeight;												
-				}			
-			}	 	
-			elt.insertPos = adjConElts[nToAnimate].n		 */
-				
 		};
 		if (!dirSwitch && trigger == true && Object.keys(elts).length > 1) {											// go back to original container
 			
@@ -186,7 +141,7 @@
 					elts[elt.n].n = elt.n; 
 					elt.n = elt.n + 1;
 					eltNext.transition({'left': eltNext.pos.left + 'px', x: '+=' + elt.completeWidth},0, function () {	
-						$(this).transition({x: 0}, 250);						
+						this.transition({x: 0}, 250);						
 					});
 				}
 			}
@@ -207,31 +162,23 @@
 					elts[elt.n].n = elt.n; 
 					elt.n = elt.n - 1;
 					eltPrev.transition({'left': eltPrev.pos.left + 'px', x: '-=' + elt.completeWidth},0, function () {						
-						$(this).transition({x: 0}, 250);							
+						this.transition({x: 0}, 250);							
 					});								
 				}
 			}
 		} 
 		if(move == 'up'){						//  move up
 	
-			if (trigger) {										// trigger  for animating adjacent container
-				
+			if (trigger) {										// trigger  for animating adjacent container				
 				for(var i = 0; i < adjConElts.length; i++){ 			//Loop the array
 					var obj = adjConElts[i]
-					if (ui.position.top  < obj.pos.top + obj.completeHeight/2) {
-							
-						if (obj.moved == false) {
-						
-							obj.transition({y: '+=' + elt.completeHeight}, 250)
-							obj.moved = true;
-							elt.insertPos = obj.n;
-							obj.pos.top = obj.pos.top + elt.completeHeight;
-							
-						
-						};
+					if (ui.position.top  < obj.pos.top + obj.completeHeight/2 && obj.moved == false) {
+						obj.transition({y: '+=' + elt.completeHeight}, 250)
+						obj.moved = true;
+						elt.insertPos = obj.n;
+						obj.pos.top = obj.pos.top + elt.completeHeight;
 					};
-				};
-	
+				};	
 			}   
 			else {
 			
@@ -248,7 +195,7 @@
 						elts[elt.n].n = elt.n; 
 						elt.n = elt.n - 1; 
 						eltPrev.transition({'top': eltPrev.pos.top + 'px', y: '-=' + elt.completeHeight},0, function () {	
-							$(this).transition({y: 0}, 250);							
+							this.transition({y: 0}, 250);							
 						});																	
 					}
 				}
@@ -258,19 +205,13 @@
 		    if (trigger) {										// trigger  for animating adjacent container					
 				for(var i = 0; i < adjConElts.length; i++){ //Loop the array
 					var obj = adjConElts[i]
-					if (ui.position.top  + elt.completeHeight > obj.pos.top + obj.completeHeight/2) {
-							
-						if (obj.moved == true) {
-						
+					if (ui.position.top  + elt.completeHeight > obj.pos.top + obj.completeHeight/2 && obj.moved == true) {
 							obj.transition({y: 0}, 250)
 							obj.moved = false;
 							elt.insertPos = obj.n +1;
-							obj.pos.top = obj.pos.top - elt.completeHeight;
-						
-						}
+							obj.pos.top = obj.pos.top - elt.completeHeight;										
 					}
-				};
-				
+				};				
 			}   
 			else {
 				if(elt.n < elts.length-1){
@@ -286,7 +227,7 @@
 						elts[elt.n].n = elt.n; 
 						elt.n = elt.n + 1; 
 						eltNext.transition({'top': eltNext.pos.top + 'px', y: '+=' + elt.completeHeight},0, function () {		
-							$(this).transition({y: 0}, 250);						
+							this.transition({y: 0}, 250);						
 						});
 					}
 				}
@@ -298,16 +239,15 @@
 	
 	function onStop(evt, ui, elt, div, o)	{									// Stop
 	
-		var dropInContainer = (elt.belongsTo % 2 == 0 ? elt.belongsTo +1 : elt.belongsTo - 1); 	//find out if dropped elt belongs to even or odd container and select opposite
-		var	outAnim = ( o.isVertical && transSupport ? ({x: 0, y: 0, 'box-shadow': 'none'}) : ({ x: 0, y: 0, 'opacity': 1.0, 'z-index':5 }) );
+	
+		
 
-		if (o.setChars) {	 setChars(div);	}			// calls the setChars function	
+		if (o.setChars) {	 setChars(div);	}			// setChars function	- re-align lis after uppercase/lowercase for difficulty setting  2
 		
 		if (trigger) {													// animate lis in previous container.
 			var $thisWidth = (o.isVertical ? 0: elt.completeWidth);
 			var $thisHeight = elt.completeHeight;
 			
-			console.log(instanceArr[elt.belongsTo].elts)
 			for (var i=elt.index() +1;i<instanceArr[elt.belongsTo].elts.length;i++) { 
 					$(instanceArr[elt.belongsTo].elts[i][0]).animate({
 					'left': '-=' + $thisWidth + 'px',
@@ -322,47 +262,58 @@
 			}
 			
 	
-			var animateToPos = elt.insertPos == adjConElts.length && elt.insertPos > 0? adjConElts[elt.insertPos -1].pos.top + adjConElts[elt.insertPos -1].completeHeight: elt.insertPos == 0 ? 0 :adjConElts[elt.insertPos].pos.top - elt.completeHeight;
+			var animateToPos = elt.insertPos == instanceArr[elt.movesTo].elts.length && elt.insertPos > 0? instanceArr[elt.movesTo].elts[elt.insertPos -1].pos.top + instanceArr[elt.movesTo].elts[elt.insertPos -1].completeHeight: elt.insertPos == 0 ? 0 :instanceArr[elt.movesTo].elts[elt.insertPos].pos.top - elt.completeHeight;
+			
 			var animateBack = {left: adjacentDir, top : animateToPos, x:  ui.position.left - adjacentDir, y:  ui.position.top - animateToPos }	
 		} 
 		else { 
 			var animateBack = {left: elt.pos.left, top : elt.pos.top, x:  ui.position.left - elt.pos.left, y:  ui.position.top - elt.pos.top }
 		}
 		
-		elt.transition(animateBack,0, function () {
 		
-			if (o.setChars)	{										// re-align lis after uppercase/lowercase for difficulty setting  2	
+		elt.css(animateBack);
+		
+		var	outAnim = ( o.isVertical && transSupport ? ({x: 0, y: 0, 'box-shadow': 'none'}) : ({ x: 0, y: 0, 'opacity': 1.0, 'z-index':5 }) );
+		
+		if (o.setChars)	{										// setChars function	- re-align lis after uppercase/lowercase for difficulty setting  2
+		
+			elt.transition(outAnim,270);
 			
-				outAnim = { x: 0, y: 0, 'opacity': 1.0, 'z-index':5 };
-			
-				$(this).transition(outAnim,270);
-				
-				var left=0;			
-				div.find('li').each(function(ind, elem){ 	
-					var $this = $(this)
-					$this.transition({left: left + 'px',top : 0}, 100);
-					left += $this.outerWidth(true);
-				});
-						
-			}		
-			else {  													// for difficulty setting 0
-				
-				$(this).transition(outAnim,200, function () {       // auto color lis when difficulty set to 0 - Senner
-					if (!!o.autoValidate) {
-						o.autoValidate();	 						// calls the autovalidate function in the plugin calling script
-						
-					}
+			var left=0;			
+			div.find('li').each(function(ind, elem){ 	
+				var $this = $(this)
+				$this.transition({left: left + 'px',top : 0}, 100);
+				left += $this.outerWidth(true);
+			});
 					
-					  if (trigger) {						
-						instanceArr[dropInContainer].addLiElem(elt.text(), elt.insertPos);
-						trigger = false;
-						instanceArr[elt.belongsTo].removeLiElem(elt)
-						console.log(instanceArr[dropInContainer])
-					}  
-				});
-			}
-		});
+		}		
+		else {  													// for difficulty setting 0
+			
+			elt.transition(outAnim,200, function () {       // auto color lis when difficulty set to 0 - Senner
+				if (!!o.autoValidate) {
+					o.autoValidate();	 						// calls the autovalidate function in the plugin calling script						
+				}
+				 if (trigger) {
+			
+					instanceArr[elt.movesTo].addLiElem(elt.text(), elt.insertPos);
+					trigger = false;
+					
+					instanceArr[elt.belongsTo].addLiElem( vdvddv[vdvddv.length -1].text(), 0 )
+					instanceArr[elt.belongsTo].removeLiElem(elt)
+		
+					
+					
+				
+				}  
+			});
+		}
+		
 	};
+	
+	function animateBack () {
+		
+		
+	}
 	
 	/*
 	 * modified offset function to handle the local position
@@ -384,62 +335,48 @@
 	function JumbleScramble(element, options) {					// Constructor function 
 	
 		this.div = $(element);
-		this.container = conCount;
+		this.ul = this.div.find('ul');
+		this.container = conCount;		
+		this.adjCon = this.container % 2 == 0 ? this.container +1 : this.container -1;
+		this.options = $.extend( {}, defaults, options) ;
+		this.init();
+		
 		conCount++;
-	
-		/* if (typeof options === 'string') {
-			this.liText = liText;
-			this.liPosition = liPosition;
-			this[options + 'LiElem']()
-		}
-		else { */
-			this.options = $.extend( {}, defaults, options) ;
-			this.init();
-		//}		
+		
 	};	
 
 	JumbleScramble.prototype.removeLiElem = function () {							// Remove new li to previous collection
 		
-			var ul = $("ul", this.div); 
 			var o = this.options;
 			var elt = arguments[0];
 			var n = elt.index();
 			var thisElts = this.elts;
 			var tempArr = [];
-			var $thisWidth = (o.isVertical ? 0: elt.completeWidth);
-			var $thisHeight = elt.completeHeight;
-			var dropInContainer = (elt.belongsTo % 2 == 0 ? elt.belongsTo +1 : elt.belongsTo - 1);		
+			
 			for (var i=0;i<thisElts.length;i++) { 
 				if (i > n ) {
 					tempArr.push(thisElts[i])	
 				}
-			}
+			};
 			var eObjIdLenght = thisElts.length -1
 			
-			/* ul.find('li').eq(n).nextAll().animate({
-				'left': '-=' + $thisWidth + 'px',
-				'top' : '-=' + $thisHeight + 'px',
-				x: '+=' + $thisWidth,
-				y: '+=' + $thisHeight
-				},0).promise().done(function () {
-					$(this).animate({x: 0, y: 0}, 200)					
-				}); */
-			ul.css({
-				'width' : parseInt( ul.css('width')) - parseInt($thisWidth) + 'px',
-				'height' : parseInt( ul.css('height')) - parseInt($thisHeight) + 'px'
-		
-			})
+			this.ul.css({													// update ul size
+				'width' : '-=' + (o.isVertical ? 0: elt.completeWidth) + 'px',
+				'height' : '-=' + elt.completeHeight + 'px'
+			});
+			
 			i = 0;	
-			 for (var i=0;i<tempArr.length;i++) { 
+			for (var i=0;i<tempArr.length;i++) { 
 				tempArr[i].pos.left = tempArr[i][0].offsetLeft;
 				tempArr[i].pos.top =  tempArr[i][0].offsetTop;							
 				tempArr[i].n = tempArr[i].n -1;
 				thisElts[n + i] = tempArr[i];
 
-			}
+			};
+			
 			delete thisElts[thisElts.length -1]
-			thisElts.length = eObjIdLenght
-			elt.remove()		
+			thisElts.length = eObjIdLenght;
+			elt.remove();	
 			
 	};	
 	
@@ -447,12 +384,13 @@
 	JumbleScramble.prototype.addLiElem = function (liText, liPosition) {								// Add new li to previous collection
 			
 		 	var div = this.div; 
-			var ul = $("ul", div); 
+			var ul = this.ul; 
 			var thisElts = this.elts;
 			var n = Math.min(Math.max(parseInt(liPosition), 0), thisElts.length);
 			var o = this.options;
 			var elt = $("<li class='listItem'>" + liText + "</li>");
 			var thisContainer = this.container;
+			var adjCon = this.adjCon;
 			var allBeforeWidth = 0;
 			var allBeforeHeight = 0;
 			var tempArr = [];
@@ -478,8 +416,7 @@
 			if (thisElts.length == 0) {elt.css(eltObj).appendTo(ul)} 							// if there are no elements present at drop
 			else (n > 0 ? elt.insertAfter( thisElts[n-1]).css(eltObj) : elt.insertBefore( thisElts[n]).css(eltObj) );
 			
-			
-			
+		
 			var $thisWidth = (o.isVertical ? 0: elt.outerWidth(true));
 			var $thisHeight = elt.outerHeight(true);
 					
@@ -489,12 +426,12 @@
 				'top' : '+=' + $thisHeight + 'px'
 				});
 			ul.css({
-				'width' : parseInt( ul.css('width')) + parseInt($thisWidth) + 'px',
-				'height' : parseInt( ul.css('height')) + parseInt($thisHeight) + 'px'
+				'width' : '+=' + $thisWidth + 'px',
+				'height' :' +=' + $thisHeight + 'px'
 				
 			})
 					
-			addToObject(thisElts, elt, n, $thisHeight, $thisWidth, o, thisContainer)
+			addToObject(thisElts, elt, n, $thisHeight, $thisWidth, o, thisContainer, adjCon)
 			addHandlers(thisElts, elt, o, div);
 			
 			
@@ -513,14 +450,14 @@
 	JumbleScramble.prototype.init = function () {
 		
 		var o = this.options; 
-		var div = this.div, ul = $("ul", div), li = $("li", ul);					// Variables declaration
+		var div = this.div,  li = div.find('li');					// Variables declaration
 		var left=0, top = 0, n = 0, ulSize = 0;	
 		var thisContainer = this.container;	
-		this.elts = new Array(li.size());
-		var thisElts = this.elts;
-		
-		li.each(function(liInd, liElem){ 											// Loop over each li, position, store object data and bind draggable handlers. 
-			var elt = $(this);	
+		var adjCon = this.adjCon;
+		var thisElts = this.elts = new Array(li.size());
+			
+		for (var i=0;i<thisElts.length;i++) { 
+			var elt = li.eq(i);	
 			
 			if (o.isVertical) {
 				elt.css('top', top + 'px');											// get each li height in case of individual heights.
@@ -537,25 +474,20 @@
 				ulSize += $thisWidth; 												// calculate the size of the ul element				
 			}	
 			
-			addToObject(thisElts, elt, n, $thisHeight, $thisWidth, o, thisContainer);		
+			addToObject(thisElts, elt, n, $thisHeight, $thisWidth, o, thisContainer, adjCon);		
 			addHandlers(thisElts, elt, o, div);			
-			n = n+1;		
-		});
-			
-		if (!o.isVertical) {	
-			ul.css({width:ulSize, height: li.outerHeight(true) + 'px' });	 		// Update the ul size	
+			n = n+1;					
 		}
-		else {
-			ul.css({height: ulSize });
-		}
-		//console.log(eltsObject)	
+		
+		o.isVertical ? 	div.find('ul').css({height: ulSize }) : div.find('ul').css({width:ulSize, height: li.outerHeight(true) + 'px' }); 	// Update the ul size
+
 	};
+	
 	var instanceArr = [];	
 	
 	$.fn.jumbleScramble = function(options, arg1, arg2) { 							// jumbleScramble fn
-		
-			
-		if (typeof options === 'string') {	
+				
+		if (typeof options === 'string') {											// if a metod is calles
 			var self = this;
 			var thisId  = ( options == 'remove' ? this.parent().parent().attr('id') : this.attr('id') );
 			
@@ -567,7 +499,7 @@
 			
 		}
 		else {
-			return this.each(function (i,e) {
+			return this.each(function (i,e) {										
 				
 				instanceArr.push(new JumbleScramble(this, options, arg1, arg2)) 	
 			}).promise().done(function (){
