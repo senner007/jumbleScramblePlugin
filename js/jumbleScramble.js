@@ -1,13 +1,9 @@
 (function ( $ ) {                 			    // Compliant with jquery.noConflict()
 
-	  var testElement = document.createElement('div');
-
+	var testElement = document.createElement('div');
     var transitionPrefix = "webkitTransition" in testElement.style ? "webkitTransition" : "transition";
     var transformPrefix = "webkitTransform" in testElement.style ? "webkitTransform" : "-ms-transform" in testElement.style ? "-ms-transform" : "transform";
-	
 
-	
-	
 	var transSupport = $.support.animate = (function(){			
 		var thisBody = document.body || document.documentElement,
 		thisStyle = thisBody.style,
@@ -97,7 +93,7 @@
 		}
 		
 		if (dirSwitch && trigger == false) {								// trigger animations for adjacent container
-			console.log('hello')
+			
 			trigger = true;
 			var tempArr = []
 			for(var i = 0; i < adjConElts.length; i++){ 			//Loop the array
@@ -266,13 +262,7 @@
 			}
 		}
 	};
-	
-	$.fn.emulateTransitionEnd = function(duration) {
-		  var called = false, $el = this;
-		  $(this).one('webkitTransitionEnd', function() { called = true; });
-		  var callback = function() { if (!called) $($el).trigger('webkitTransitionEnd'); };
-		  setTimeout(callback, duration);
-	};
+
 	
 	function onStop(evt, ui, elt, div, o)	{									// Stop
 	
@@ -342,7 +332,7 @@
 		
 	};
 	
-	function animateBack (elt, ui) {
+	function animateBack (elt, ui) {					// FIX-ME add to prototype
 		if (trigger) {
 			var animateToPos = elt.insertPos == instanceArr[elt.movesTo].elts.length && elt.insertPos > 0? instanceArr[elt.movesTo].elts[elt.insertPos -1].pos.top + instanceArr[elt.movesTo].elts[elt.insertPos -1].completeHeight: elt.insertPos == 0 ? 0 :instanceArr[elt.movesTo].elts[elt.insertPos].pos.top - elt.completeHeight;
 			
