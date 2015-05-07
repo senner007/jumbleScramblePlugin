@@ -1,11 +1,28 @@
 (function ( $ ) {                 			    // Compliant with jquery.noConflict()
 
-	var transSupport = $.support.transition = (function(){			
+	  var testElement = document.createElement('div');
+
+    var transitionPrefix = "webkitTransition" in testElement.style ? "webkitTransition" : "transition";
+    var transformPrefix = "webkitTransform" in testElement.style ? "webkitTransform" : "-ms-transform" in testElement.style ? "-ms-transform" : "transform";
+	
+
+	
+	
+	var transSupport = $.support.animate = (function(){			
 		var thisBody = document.body || document.documentElement,
 		thisStyle = thisBody.style,
-		support = thisStyle.transition !== undefined || thisStyle.WebkitTransition !== undefined || thisStyle.MozTransition !== undefined || thisStyle.MsTransition !== undefined || thisStyle.OTransition !== undefined;
+		support = thisStyle.animate !== undefined || thisStyle.WebkitTransition !== undefined || thisStyle.MozTransition !== undefined || thisStyle.MsTransition !== undefined || thisStyle.OTransition !== undefined;
 		return support;
 	})();
+		
+	
+	$.fn.transToZero = function () {
+		var elt = this[0];
+		setTimeout(function(){ 
+				elt.style[transitionPrefix] = '250ms ease';					
+				elt.style[transformPrefix] = 'translate(0px,0px)';	// translateZ doesn't work for ie9	
+		}, 0);
+	};
 	
 	function addToObject(thisElts, elt, n, $thisHeight, $thisWidth, o, thisContainer, adjCon) {
 			
@@ -56,8 +73,10 @@
 	};
 	
 	function onStart(elt, o) {																// Start			
-		var	inAnim = ( o.isVertical && transSupport ? ({'box-shadow': '0px 2px 10px rgba(0,0,0,.7)'}) : ({'opacity': 0.4, 'z-index':200}) );				
-		elt.css(inAnim);
+		//var	inAnim = ( o.isVertical && transSupport ? ({'box-shadow': '0px 2px 10px rgba(0,0,0,.7)'}) : ({'opacity': 0.4, 'z-index':200}) );				
+		//elt.css(inAnim);
+		elt.addClass('boxShadow')
+		elt[0].style[transitionPrefix] = '0s';
 	};
 	
 	
@@ -70,7 +89,6 @@
 		var oldPos = (thisElt.eltPos != null ? thisElt.eltPos : ui.position); 			//find the old position stored on the $object 
 		thisElt.eltPos = ui.position;													//its current position derived from $draggable object		
 			
-		//console.log(elt.belongsTo % 2 == 0)	
 		if (instanceArr.length > 1) {
 			adjConElts = instanceArr[elt.movesTo].elts;
 			adjacentDir = instanceArr[elt.movesTo].div.offset().left -  elt.parent().offset().left;	
@@ -79,7 +97,7 @@
 		}
 		
 		if (dirSwitch && trigger == false) {								// trigger animations for adjacent container
-
+			console.log('hello')
 			trigger = true;
 			var tempArr = []
 			for(var i = 0; i < adjConElts.length; i++){ 			//Loop the array
@@ -89,7 +107,9 @@
 						if (obj.moved == false) {
 							tempArr.push(i)
 							//console.log(tempArr)
-							obj.transition({y: '+=' + elt.completeHeight}, 250)
+					
+							obj[0].style[transitionPrefix] = '250ms ease';
+							obj[0].style[transformPrefix] = 'translateY(' + elt.completeHeight + 'px)';						
 							obj.moved = true;
 							elt.insertPos = obj.n;
 							obj.pos.top = obj.pos.top + elt.completeHeight;
@@ -108,7 +128,7 @@
 				var objectNumber = adjConElts[ind];
 				
 				if (objectNumber.moved == true) {
-					objectNumber.transition({y: 0},200);
+					objectNumber.transToZero();
 						objectNumber.moved = false;
 						objectNumber.pos.top = objectNumber.pos.top - elt.completeHeight;
 				}			
@@ -140,9 +160,11 @@
 					elts[elt.n + 1] = elt;																	//update the n of the elements
 					elts[elt.n].n = elt.n; 
 					elt.n = elt.n + 1;
-					eltNext.transition({'left': eltNext.pos.left + 'px', x: '+=' + elt.completeWidth},0, function () {	
-						this.transition({x: 0}, 250);						
-					});
+			
+					eltNext[0].style[transitionPrefix] = '0s';
+					eltNext[0].style.left = eltNext.pos.left + 'px';
+					eltNext[0].style[transformPrefix] = 'translateX(' + elt.completeWidth  + 'px)';
+					eltNext.transToZero();
 				}
 			}
 		}
@@ -161,9 +183,12 @@
 					elts[elt.n - 1] = elt;																						// update the n of the elements
 					elts[elt.n].n = elt.n; 
 					elt.n = elt.n - 1;
-					eltPrev.transition({'left': eltPrev.pos.left + 'px', x: '-=' + elt.completeWidth},0, function () {						
-						this.transition({x: 0}, 250);							
-					});								
+			
+
+					eltPrev[0].style[transitionPrefix] = '0s';
+					eltPrev[0].style.left =  eltPrev.pos.left + 'px';	
+					eltPrev[0].style[transformPrefix] = 'translateX(' + -(elt.completeWidth) + 'px)'; 
+					eltPrev.transToZero();					
 				}
 			}
 		} 
@@ -172,8 +197,9 @@
 			if (trigger) {										// trigger  for animating adjacent container				
 				for(var i = 0; i < adjConElts.length; i++){ 			//Loop the array
 					var obj = adjConElts[i]
-					if (ui.position.top  < obj.pos.top + obj.completeHeight/2 && obj.moved == false) {
-						obj.transition({y: '+=' + elt.completeHeight}, 250)
+					if (ui.position.top  < obj.pos.top + obj.completeHeight/2 && obj.moved == false) {						
+						obj[0].style[transitionPrefix] = '250ms ease';
+						obj[0].style[transformPrefix] = 'translateY(' + elt.completeHeight + 'px)';	
 						obj.moved = true;
 						elt.insertPos = obj.n;
 						obj.pos.top = obj.pos.top + elt.completeHeight;
@@ -186,7 +212,7 @@
 					var eltPrev = elts[elt.n - 1];					 
 					var eltPrevBound = eltPrev.pos.top + parseInt(eltPrev.completeHeight / 2);
 					if(thisElt.eltPos.top < eltPrevBound){	
-						if (eltPrev.hasClass('locked') ){ return; } 
+						//if (eltPrev.hasClass('locked') ){ return; } 
 						elt.insertBefore(eltPrev);							
 						elt.pos.top = eltPrev.pos.top;
 						eltPrev.pos.top += elt.completeHeight;			
@@ -194,9 +220,12 @@
 						elts[elt.n - 1] = elt;																						
 						elts[elt.n].n = elt.n; 
 						elt.n = elt.n - 1; 
-						eltPrev.transition({'top': eltPrev.pos.top + 'px', y: '-=' + elt.completeHeight},0, function () {	
-							this.transition({y: 0}, 250);							
-						});																	
+
+						eltPrev[0].style[transitionPrefix] = '0s';
+						eltPrev[0].style.top =  eltPrev.pos.top + 'px';	
+						eltPrev[0].style[transformPrefix] = 'translateY(' + -(elt.completeHeight) + 'px)'; 
+						eltPrev.transToZero();
+	
 					}
 				}
 			}
@@ -206,7 +235,7 @@
 				for(var i = 0; i < adjConElts.length; i++){ //Loop the array
 					var obj = adjConElts[i]
 					if (ui.position.top  + elt.completeHeight > obj.pos.top + obj.completeHeight/2 && obj.moved == true) {
-							obj.transition({y: 0}, 250)
+							obj.transToZero();
 							obj.moved = false;
 							elt.insertPos = obj.n +1;
 							obj.pos.top = obj.pos.top - elt.completeHeight;										
@@ -218,7 +247,7 @@
 					var eltNext = elts[elt.n + 1];					
 					var eltNextBound = eltNext.pos.top + parseInt(eltNext.completeHeight / 2);
 					if(thisElt.eltPos.top + elt.completeHeight > eltNextBound){
-						if (eltNext.hasClass('locked') ){ return; } 
+						//if (eltNext.hasClass('locked') ){ return; } 
 						elt.insertAfter(eltNext);
 						eltNext.pos.top = elt.pos.top;
 						elt.pos.top += eltNext.completeHeight;																					
@@ -226,95 +255,111 @@
 						elts[elt.n + 1] = elt;																
 						elts[elt.n].n = elt.n; 
 						elt.n = elt.n + 1; 
-						eltNext.transition({'top': eltNext.pos.top + 'px', y: '+=' + elt.completeHeight},0, function () {		
-							this.transition({y: 0}, 250);						
-						});
+						
+						eltNext[0].style[transitionPrefix] = '0s';
+						eltNext[0].style.top = eltNext.pos.top + 'px';
+						eltNext[0].style[transformPrefix] = 'translateY(' + elt.completeHeight  + 'px)';
+						eltNext.transToZero();
+						
 					}
 				}
 			}
 		}
 	};
 	
-
+	$.fn.emulateTransitionEnd = function(duration) {
+		  var called = false, $el = this;
+		  $(this).one('webkitTransitionEnd', function() { called = true; });
+		  var callback = function() { if (!called) $($el).trigger('webkitTransitionEnd'); };
+		  setTimeout(callback, duration);
+	};
 	
 	function onStop(evt, ui, elt, div, o)	{									// Stop
 	
-	
-		
-
-		if (o.setChars) {	 setChars(div);	}			// setChars function	- re-align lis after uppercase/lowercase for difficulty setting  2
+				
 		
 		if (trigger) {													// animate lis in previous container.
-			var $thisWidth = (o.isVertical ? 0: elt.completeWidth);
-			var $thisHeight = elt.completeHeight;
+			var thisWidth = (o.isVertical ? 0: elt.completeWidth);
+			var thisHeight = elt.completeHeight;
 			
 			for (var i=elt.index() +1;i<instanceArr[elt.belongsTo].elts.length;i++) { 
-					$(instanceArr[elt.belongsTo].elts[i][0]).animate({
-					'left': '-=' + $thisWidth + 'px',
-					'top' : '-=' + $thisHeight + 'px',
-					x: '+=' + $thisWidth,
-					y: '+=' + $thisHeight
-				},0).promise().done(function () {
+				var prevElt = instanceArr[elt.belongsTo].elts[i][0];
 				
-					$(this).transit({x: 0, y: 0}, 200)					
-				});	
+				prevElt.style[transitionPrefix] = '0s';
+				prevElt.style.left = parseInt(prevElt.style.left) - thisWidth + 'px';
+				prevElt.style.top = parseInt(prevElt.style.top) - thisHeight + 'px';
+				prevElt.style[transformPrefix] = 'translate(' + thisWidth  + 'px,' +  thisHeight + 'px)';
+				$(prevElt).transToZero();
 				
-			}
-			
-	
-			var animateToPos = elt.insertPos == instanceArr[elt.movesTo].elts.length && elt.insertPos > 0? instanceArr[elt.movesTo].elts[elt.insertPos -1].pos.top + instanceArr[elt.movesTo].elts[elt.insertPos -1].completeHeight: elt.insertPos == 0 ? 0 :instanceArr[elt.movesTo].elts[elt.insertPos].pos.top - elt.completeHeight;
-			
-			var animateBack = {left: adjacentDir, top : animateToPos, x:  ui.position.left - adjacentDir, y:  ui.position.top - animateToPos }	
-		} 
-		else { 
-			var animateBack = {left: elt.pos.left, top : elt.pos.top, x:  ui.position.left - elt.pos.left, y:  ui.position.top - elt.pos.top }
+			};
+				
 		}
 		
+		animateBack(elt, ui);
+			
+		/* var	outAnim = ( o.isVertical && transSupport ? ({'box-shadow': 'none'}) : ({'opacity': 1.0, 'z-index':5 }) ); */
 		
-		elt.css(animateBack);
-		
-		var	outAnim = ( o.isVertical && transSupport ? ({x: 0, y: 0, 'box-shadow': 'none'}) : ({ x: 0, y: 0, 'opacity': 1.0, 'z-index':5 }) );
+		elt[0].style[transitionPrefix] = 'box-shadow 250ms';
+		elt.removeClass('boxShadow');
+		elt.transToZero();
 		
 		if (o.setChars)	{										// setChars function	- re-align lis after uppercase/lowercase for difficulty setting  2
-		
-			elt.transition(outAnim,270);
+			
+			setChars(div);		// setChars function	- re-align lis after uppercase/lowercase for difficulty setting  2
 			
 			var left=0;			
-			div.find('li').each(function(ind, elem){ 	
+			div.find('li').each(function(ind, elem){ 					// FIX-Me : put in prototype
 				var $this = $(this)
-				$this.transition({left: left + 'px',top : 0}, 100);
+				$this.animate({left: left + 'px',top : 0}, 100);
 				left += $this.outerWidth(true);
 			});
 					
 		}		
 		else {  													// for difficulty setting 0
-			
-			elt.transition(outAnim,200, function () {       // auto color lis when difficulty set to 0 - Senner
+		
+			transSupport ? elt.one('transitionend', function () { appendRemove() }) : appendRemove()  // only wait for transitionend if supported (not ie9)
+
+			function appendRemove () {
+				
 				if (!!o.autoValidate) {
 					o.autoValidate();	 						// calls the autovalidate function in the plugin calling script						
 				}
-				 if (trigger) {
-			
+				if (trigger) {
+					
 					instanceArr[elt.movesTo].addLiElem(elt.text(), elt.insertPos);
 					trigger = false;
-					 var vdvddv = instanceArr[elt.movesTo].elts;
+					
+					var vdvddv = instanceArr[elt.movesTo].elts;									// append to previous
 					
 					instanceArr[elt.belongsTo].addLiElem( vdvddv[vdvddv.length -1].text(), 0 )
-					instanceArr[elt.movesTo].removeLiElem( vdvddv[vdvddv.length -1] ) 
-					instanceArr[elt.belongsTo].removeLiElem(elt)
-		
+					instanceArr[elt.movesTo].removeLiElem( vdvddv[vdvddv.length -1] )  			// append to previous end
 					
-					
-				
+					instanceArr[elt.belongsTo].removeLiElem(elt) 
 				}  
-			});
+			}; 
+			
 		}
 		
 	};
 	
-	function animateBack () {
+	function animateBack (elt, ui) {
+		if (trigger) {
+			var animateToPos = elt.insertPos == instanceArr[elt.movesTo].elts.length && elt.insertPos > 0? instanceArr[elt.movesTo].elts[elt.insertPos -1].pos.top + instanceArr[elt.movesTo].elts[elt.insertPos -1].completeHeight: elt.insertPos == 0 ? 0 :instanceArr[elt.movesTo].elts[elt.insertPos].pos.top - elt.completeHeight;
+			
+			//var animateBack = {left: adjacentDir, top : animateToPos, x:  ui.position.left - adjacentDir, y:  ui.position.top - animateToPos }	
+			var thisLeft = adjacentDir, thisTop = animateToPos, thisX = ui.position.left - adjacentDir, thisY = ui.position.top - animateToPos;
+			
+		}
+		else {
+			
+		//	var animateBack = {left: elt.pos.left, top : elt.pos.top, x:  ui.position.left - elt.pos.left, y:  ui.position.top - elt.pos.top }
+			var thisLeft = elt.pos.left, thisTop = elt.pos.top, thisX = ui.position.left - elt.pos.left, thisY = ui.position.top - elt.pos.top;
+		}
 		
-		
+		elt[0].style.left = thisLeft + 'px'
+		elt[0].style.top = thisTop + 'px'
+		elt[0].style[transformPrefix] = 'translate(' + thisX  + 'px,' +  thisY + 'px)';
+		//elt.css(animateBack);
 	}
 	
 	/*
@@ -400,9 +445,8 @@
 			
 			for (var i=0;i<thisElts.length;i++) { 
 				thisElts[i].moved = false;
-				if (trigger) {
-					thisElts[i].transition({y:0},0)  
-				}
+				thisElts[i][0].style[transitionPrefix] = '0s';					
+				thisElts[i][0].style[transformPrefix] = 'translate(0px,0px)';			
 				if (i < n ) {
 					allBeforeWidth += thisElts[i].completeWidth;
 					allBeforeHeight += thisElts[i].completeHeight;
