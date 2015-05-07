@@ -40,7 +40,8 @@
 	function addHandlers(thisElts, elt, o, div) {
 			var parentContainment = ( $('#frame').length ? $('#frame') : div );		// use '.#frame' if it exists
 			if (o.isVertical ? axis = 'y' : axis = 'false')
-			elt.draggable({															// make the element draggable
+			
+			/* elt.draggable({															// make the element draggable
 				iframeFix: true,
 				addClasses: false,
 				//axis: axis,
@@ -50,7 +51,32 @@
 				start: function(evt, ui){ onStart(elt, o); },								
 				stop:function(evt, ui){ onStop(evt, ui, elt, div, o);}
 			});
-	
+			 */
+			var $draggable = elt.draggabilly({															// make the element draggable
+				/* 
+				drag: function(evt, ui){ onDrag(evt, ui, elt, thisElts, o);}, 			
+				start: function(evt, ui){ onStart(elt, o); },								
+				stop:function(evt, ui){ onStop(evt, ui, elt, div, o);} */
+			});
+			
+			$draggable.on( 'dragStart', function(evt, ui){ onStart(elt, o); })
+			$draggable.on( 'dragMove', function(evt, ui){ 
+				var draggie = $(this).data('draggabilly');
+			
+				
+				onDrag(ui, draggie, elt, thisElts, o); 
+			
+			})
+			
+			$draggable.on( 'dragEnd', function(evt, ui){ 
+				
+				var draggie = $(this).data('draggabilly');
+				
+				onStop(ui, draggie, elt, div, o);
+			
+			})
+			
+		
 	};
 	
 	function setChars (div) {
@@ -77,12 +103,17 @@
 	
 	
 	var trigger = false;
-	
-	function onDrag(e, ui, elt, elts, o){													// Drag
+	var oldPos;
+	function onDrag(ui, draggie, elt, elts, o){													// Drag
+		
+		ui.position = {};
+		//console.log(ui.position.x)
+		ui.position.top = draggie.position.y;
+		ui.position.left = draggie.position.x;
 		
 		var thisElt = this;																//must be saved to a variable to avoid random 
 																				//occurrences of non-moving elements in safari iPad.
-		var oldPos = (thisElt.eltPos != null ? thisElt.eltPos : ui.position); 			//find the old position stored on the $object 
+		oldPos = (thisElt.eltPos != null ? thisElt.eltPos : ui.position); 			//find the old position stored on the $object 
 		thisElt.eltPos = ui.position;													//its current position derived from $draggable object		
 			
 		if (instanceArr.length > 1) {
@@ -93,7 +124,7 @@
 		}
 		
 		if (dirSwitch && trigger == false) {								// trigger animations for adjacent container
-			
+		
 			trigger = true;
 			var tempArr = []
 			for(var i = 0; i < adjConElts.length; i++){ 			//Loop the array
@@ -117,7 +148,6 @@
 			elt.insertPos = tempArr[0] >= 0 ? tempArr[0] : adjConElts.length;
 		};
 		if (!dirSwitch && trigger == true && Object.keys(elts).length > 1) {											// go back to original container
-			
 			trigger = false;
 			
 			 for(var ind = 0; ind < adjConElts.length; ind++){ 						//Loop the array starting from the first element to be moved down
@@ -191,9 +221,12 @@
 		if(move == 'up'){						//  move up
 	
 			if (trigger) {										// trigger  for animating adjacent container				
-				for(var i = 0; i < adjConElts.length; i++){ 			//Loop the array
-					var obj = adjConElts[i]
-					if (ui.position.top  < obj.pos.top + obj.completeHeight/2 && obj.moved == false) {						
+				//for(var i = 0; i < adjConElts.length; i++){ 			//Loop the array
+				if (elt.insertPos > 0) {
+					
+					var obj = adjConElts[elt.insertPos -1]
+					if (ui.position.top  < obj.pos.top + obj.completeHeight/2 && obj.moved == false) {	
+					
 						obj[0].style[transitionPrefix] = '250ms ease';
 						obj[0].style[transformPrefix] = 'translateY(' + elt.completeHeight + 'px)';	
 						obj.moved = true;
@@ -228,8 +261,10 @@
 		}
 		else if(move == 'down'){ 				//  move down	
 		    if (trigger) {										// trigger  for animating adjacent container					
-				for(var i = 0; i < adjConElts.length; i++){ //Loop the array
-					var obj = adjConElts[i]
+			//	for(var i = 0; i < adjConElts.length; i++){ //Loop the array
+	
+				if (elt.insertPos < adjConElts.length) {
+					var obj = adjConElts[elt.insertPos]
 					if (ui.position.top  + elt.completeHeight > obj.pos.top + obj.completeHeight/2 && obj.moved == true) {
 							obj.transToZero();
 							obj.moved = false;
@@ -264,8 +299,11 @@
 	};
 
 	
-	function onStop(evt, ui, elt, div, o)	{									// Stop
-	
+	function onStop(ui, draggie, elt, div, o)	{									// Stop
+		ui.position = {};
+		//console.log(ui.position.x)
+		ui.position.top = draggie.position.y;
+		ui.position.left = draggie.position.x;
 				
 		
 		if (trigger) {													// animate lis in previous container.
