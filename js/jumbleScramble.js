@@ -601,18 +601,19 @@
 		var o = this.options;
 		var thisElts = this.elts	
 		var move;
+		var movePos = {};
 		var elt;
 		var moveIsDragged = false;
 		var draggie = {};
 		draggie.position = {};
-		
+		var ui = {};
 		
 		
 		div.on("mousedown touchstart",'.listItem',function(me){
 			move = $(this);
 
 			move[0].style[transitionPrefix] = '0s';
-			
+			move.addClass('boxShadow').addClass('dragging');
 				 
 			if (me.type == 'touchstart') { me = me.originalEvent.touches[0] }
 				var startX = me.pageX, startY = me.pageY;
@@ -620,57 +621,53 @@
 			targetOffsetY  = me.target.offsetTop;
 			targetOffsetX = me.target.offsetLeft;
 			
+			elt = instanceArr[thisContainer].elts[move.index()]
+			
 			$document.on("mousemove touchmove",function(e){
 				e.preventDefault();
-				move.addClass('boxShadow').addClass('dragging');
+				
 				moveIsDragged = true;
 				if (e.type == 'touchmove') { e = e.originalEvent.changedTouches[0]}	
 				var newDx = e.pageX - startX,
 					newDy = e.pageY - startY;
 			
-				move[0].style.webkitTransform = 'translateZ(0) translate3d(' + newDx + 'px, ' + newDy + 'px, 0px)';
-				
+				move[0].style.webkitTransform = 'translateZ(0) translate3d(' + newDx + 'px, ' + newDy + 'px, 0px)';				
 			
 				// we need to save last made offset
-				move.data('lastTransform', {dx: newDx, dy: newDy });
-				
-				var ui = {};				
+				movePos = {dx: newDx, dy: newDy };
+							
 				draggie.position.y = targetOffsetY + newDy
 				draggie.position.x = targetOffsetX + newDx
-				elt = instanceArr[thisContainer].elts[move.index()]
-				
-				onDrag(ui, draggie, elt, thisElts, o); 
-				
+
+				onDrag(ui, draggie, elt, thisElts, o); 				
 		
 			});
 			
 			$document.on("mouseup touchend",function(e){
+				move.removeClass('boxShadow').removeClass('dragging');
 				
-			
-			if (moveIsDragged == false) { 			
-				$(this).off("mousemove touchmove mouseup touchend");
-				return; 
-			}
-			
-			//console.log(move.data('lastTransform'))
-			move[0].style.webkitTransform = 'translateZ(0) translate3d(' + 0 + 'px, ' + 0 + 'px, 0px)';
-			move.css({
-				top: targetOffsetY + move.data('lastTransform').dy,
-				left: targetOffsetX + move.data('lastTransform').dx
-			}) 
-			
-			$(this).off("mousemove touchmove mouseup touchend");
-
-			draggie.position.y = targetOffsetY + move.data('lastTransform').dy
-			draggie.position.x = targetOffsetX + move.data('lastTransform').dx
-			
-			moveIsDragged = false
-			onStop(e, draggie, elt, div, o)
-		});
-		});
+				if (moveIsDragged == false) { 	
+					$(this).off("mousemove touchmove mouseup touchend");
+					return; 
+				}
 		
-	
+				move[0].style.webkitTransform = 'translateZ(0) translate3d(' + 0 + 'px, ' + 0 + 'px, 0px)';
+				move.css({
+					top: targetOffsetY + movePos.dy,
+					left: targetOffsetX + movePos.dx
+				}) 
+				$(this).off("mousemove touchmove mouseup touchend");
+
+				draggie.position.y = targetOffsetY + movePos.dy
+				draggie.position.x = targetOffsetX + movePos.dx
+				moveIsDragged = false
+				
+				onStop(e, draggie, elt, div, o)
+			});
+		});
+			
 	};
+	
 	
 	var instanceArr = [];	
 	
