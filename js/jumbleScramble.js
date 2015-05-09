@@ -1,17 +1,24 @@
 (function ( $ ) {                 			    // Compliant with jquery.noConflict()
-
+	
+	var transSupport = function()  {
+		var b = document.body || document.documentElement,
+			s = b.style,
+			p = 'transition';
+		if (typeof s[p] == 'string') { return true; }
+		// Tests for vendor specific prop
+		var v = ['Moz', 'webkit', 'Webkit', 'Khtml', 'O', 'ms'];
+		p = p.charAt(0).toUpperCase() + p.substr(1);
+		for (var i=0; i<v.length; i++) {
+			if (typeof s[v[i] + p] == 'string') { return true; }
+		}
+		return false;
+	}
+	
 	var testElement = document.createElement('div');
     var transitionPrefix = "webkitTransition" in testElement.style ? "webkitTransition" : "transition";
-    var transformPrefix = "webkitTransform" in testElement.style ? "webkitTransform" : "-ms-transform" in testElement.style ? "-ms-transform" : "transform";
-
-	var transSupport = $.support.animate = (function(){			
-		var thisBody = document.body || document.documentElement,
-		thisStyle = thisBody.style,
-		support = thisStyle.animate !== undefined || thisStyle.WebkitTransition !== undefined || thisStyle.MozTransition !== undefined || thisStyle.MsTransition !== undefined || thisStyle.OTransition !== undefined;
-		return support;
-	})();
-		
+    var transformPrefix = "webkitTransform" in testElement.style ? "webkitTransform" : "-ms-transform" in testElement.style && transSupport() == false ? "-ms-transform" : "transform";  //if ie9
 	
+
 	$.fn.transToZero = function () {
 		var elt = this[0];
 		setTimeout(function(){ 
@@ -36,83 +43,8 @@
 			thisElts[n].movesTo = adjCon;				
 
 	};
-	
-/* 	(function($) {
-		$.fn.drags = function(opt) {
 
-			
 
-			var $el = this;
-			
-
-			return $el.on("mousedown", function(e) {
-			
-				var $drag = $(this).addClass('draggable');
-				
-			
-					drg_h = $drag.outerHeight(),
-					drg_w = $drag.outerWidth(),
-					pos_y = $drag.offset().top + drg_h - e.pageY,
-					pos_x = $drag.offset().left + drg_w - e.pageX;
-				
-				$drag.on("mousemove", function(e) {
-					$('.draggable').offset({
-						top:e.pageY + pos_y - drg_h,
-						left:e.pageX + pos_x - drg_w
-					})
-				});
-				e.preventDefault(); // disable selection
-			}).on("mouseup", function() {
-			
-					$(this).removeClass('draggable');
-				
-			});
-
-		}
-	})(jQuery);
-	 */
-	
-	
-	
-	
-	
-	
-	function addHandlers(thisElts, elt, o, div) {
-			var parentContainment = ( $('#frame').length ? $('#frame') : div );		// use '.#frame' if it exists
-			o.isVertical ? axis = 'y' : axis = 'false'
-			
-			/* elt.draggable({															// make the element draggable
-				iframeFix: true,
-				addClasses: false,
-				//axis: axis,
-				containment: 'html',
-				cancel: '.locked',
-				drag: function(evt, ui){ onDrag(evt, ui, elt, thisElts, o);}, 			
-				start: function(evt, ui){ onStart(elt, o); },								
-				stop:function(evt, ui){ onStop(evt, ui, elt, div, o);}
-			});
-			 */
-			 
-			/*  var $draggable = elt.draggabilly(); 
-			
-			$draggable.on( 'dragStart', function(evt, ui){ onStart(elt, o); })
-			$draggable.on( 'dragMove', function(evt, ui){ 
-				var draggie = $(this).data('draggabilly');
-				onDrag(ui, draggie, elt, thisElts, o); 			
-			})	 	
-			$draggable.on( 'dragEnd', function(evt, ui){ 				
-				var draggie = $(this).data('draggabilly');				
-				onStop(ui, draggie, elt, div, o);			
-			})  */
-			 
-			
-					
-	};
-	
-	
-	
-	
-	
 	function setChars (div) {
 		div.find('li').each(function (i,e) {	
 			var $this = $(this);
@@ -142,10 +74,9 @@
 		
 		ui.position = {};
 		//console.log(ui.position.x)
-		ui.position.top = draggie.position.y;
+		ui.position.top = draggie.position.y;											// Redundancy - FIX ME
 		ui.position.left = draggie.position.x;
 		
-		console.log(ui.position.top)
 		
 		var thisElt = this;																//must be saved to a variable to avoid random 
 																				//occurrences of non-moving elements in safari iPad.
@@ -336,8 +267,6 @@
 
 	
 	function onStop(evt, draggie, elt, div, o)	{									// Stop
-	
-				
 		
 		if (trigger) {													// animate lis in previous container.
 			var thisWidth = (o.isVertical ? 0: elt.completeWidth);
@@ -350,19 +279,15 @@
 				prevElt.style.left = parseInt(prevElt.style.left) - thisWidth + 'px';
 				prevElt.style.top = parseInt(prevElt.style.top) - thisHeight + 'px';
 				prevElt.style[transformPrefix] = 'translate(' + thisWidth  + 'px,' +  thisHeight + 'px)';
-				$(prevElt).transToZero();
-				
-			};
-				
+				instanceArr[elt.belongsTo].elts[i].transToZero();				
+			};				
 		}
-		console.log(elt)
+	
 		animateBack(elt, draggie);
-			
-		/* var	outAnim = ( o.isVertical && transSupport ? ({'box-shadow': 'none'}) : ({'opacity': 1.0, 'z-index':5 }) ); */
 		
 		elt[0].style[transitionPrefix] = 'box-shadow 250ms';
-		elt.removeClass('boxShadow');
-		elt.transToZero();
+		elt.removeClass('boxShadow');	
+		elt.transToZero();	
 		
 		if (o.setChars)	{										// setChars function	- re-align lis after uppercase/lowercase for difficulty setting  2
 			
@@ -378,7 +303,7 @@
 		}		
 		else {  													// for difficulty setting 0
 		
-			transSupport ? elt.one('transitionend', function () { appendRemove() }) : appendRemove()  // only wait for transitionend if supported (not ie9)
+			transSupport() ? elt.one('transitionend', function () { appendRemove() }) : appendRemove() // only wait for transitionend if supported (not ie9)
 
 			function appendRemove () {
 				
@@ -390,10 +315,10 @@
 					instanceArr[elt.movesTo].addLiElem(elt.text(), elt.insertPos);
 					trigger = false;
 					
-					var vdvddv = instanceArr[elt.movesTo].elts;									// append to previous
+				/* 	var vdvddv = instanceArr[elt.movesTo].elts;									// append to previous
 					
 					instanceArr[elt.belongsTo].addLiElem( vdvddv[vdvddv.length -1].text(), 0 )
-					instanceArr[elt.movesTo].removeLiElem( vdvddv[vdvddv.length -1] )  			// append to previous end 
+					instanceArr[elt.movesTo].removeLiElem( vdvddv[vdvddv.length -1] )  			// append to previous end  */
 					
 					instanceArr[elt.belongsTo].removeLiElem(elt) 
 				}  
@@ -407,26 +332,17 @@
 		if (trigger) {
 			var animateToPos = elt.insertPos == instanceArr[elt.movesTo].elts.length && elt.insertPos > 0? instanceArr[elt.movesTo].elts[elt.insertPos -1].pos.top + instanceArr[elt.movesTo].elts[elt.insertPos -1].completeHeight: elt.insertPos == 0 ? 0 :instanceArr[elt.movesTo].elts[elt.insertPos].pos.top - elt.completeHeight;
 			
-			//var animateBack = {left: adjacentDir, top : animateToPos, x:  ui.position.left - adjacentDir, y:  ui.position.top - animateToPos }	
-			var thisLeft = adjacentDir, thisTop = animateToPos, thisX = draggie.position.x - adjacentDir, thisY = draggie.position.y - animateToPos;
-			
+			var thisLeft = adjacentDir, thisTop = animateToPos, thisX = draggie.position.x - adjacentDir, thisY = draggie.position.y - animateToPos;	
 		}
-		else {
-			
-		//	var animateBack = {left: elt.pos.left, top : elt.pos.top, x:  ui.position.left - elt.pos.left, y:  ui.position.top - elt.pos.top }
+		else {	
 			var thisLeft = elt.pos.left, thisTop = elt.pos.top, thisX = draggie.position.x - elt.pos.left, thisY = draggie.position.y - elt.pos.top;
 		}
 		
 		elt[0].style.left = thisLeft + 'px'
 		elt[0].style.top = thisTop + 'px'
 		elt[0].style[transformPrefix] = 'translate(' + thisX  + 'px,' +  thisY + 'px)';
-		//elt.css(animateBack);
 	}
 	
-	/*
-	 * modified offset function to handle the local position
-	 * @param elt: the jquery element
-	 */
 	function getOffset(elt){												
 		return {left : parseInt(elt.css('left')), top : elt.css('top') == 'auto' ? 0 : parseInt(elt.css('top'))};
 	};
@@ -436,8 +352,6 @@
 		setChars: false,
 		layoutComplete: function () {}
 	}
-	
-
 	
 	var conCount = 0;
 	function JumbleScramble(element, options) {					// Constructor function 
@@ -538,8 +452,7 @@
 				
 			})
 					
-			addToObject(thisElts, elt, n, $thisHeight, $thisWidth, o, thisContainer, adjCon)
-			//addHandlers(thisElts, elt, o, div);
+			addToObject(thisElts, elt, n, $thisHeight, $thisWidth, o, thisContainer, adjCon);
 			
 			
 			for (var i=0;i<tempArr.length;i++) { 
@@ -581,7 +494,7 @@
 				ulSize += $thisWidth; 												// calculate the size of the ul element				
 			}	
 			
-			addToObject(thisElts, elt, n, $thisHeight, $thisWidth, o, thisContainer, adjCon);		
+			addToObject(thisElts, elt, n, $thisHeight, $thisWidth, o, thisContainer, adjCon);			
 						
 			n = n+1;					
 		}
@@ -591,7 +504,7 @@
 
 	};
 	
-	JumbleScramble.prototype.addHandlers = function () {
+ 	JumbleScramble.prototype.addHandlers = function () {
 	
 		var targetOffsetY; 
 		var targetOffsetX;
@@ -607,9 +520,10 @@
 		var draggie = {};
 		draggie.position = {};
 		var ui = {};
+		var liSelector = o.isVertical == true ? '.listItem' : '.listItem-horizontal'
+	
 		
-		
-		div.on("mousedown touchstart",'.listItem',function(me){
+		div.on("mousedown touchstart",liSelector,function(me){
 			move = $(this);
 
 			move[0].style[transitionPrefix] = '0s';
@@ -621,7 +535,7 @@
 			targetOffsetY  = me.target.offsetTop;
 			targetOffsetX = me.target.offsetLeft;
 			
-			elt = instanceArr[thisContainer].elts[move.index()]
+			elt = thisElts[move.index()]
 			
 			$document.on("mousemove touchmove",function(e){
 				e.preventDefault();
@@ -631,8 +545,14 @@
 				var newDx = e.pageX - startX,
 					newDy = e.pageY - startY;
 			
-				move[0].style.webkitTransform = 'translateZ(0) translate3d(' + newDx + 'px, ' + newDy + 'px, 0px)';				
-			
+				if (transSupport()) {
+					move[0].style[transformPrefix] = 'translateZ(0) translate3d(' + newDx + 'px, ' + newDy + 'px, 0px)';			
+				}
+				else {
+					move[0].style.top = targetOffsetY + movePos.dy + 'px'
+					move[0].style.left = targetOffsetX + movePos.dx + 'px'
+				}
+
 				// we need to save last made offset
 				movePos = {dx: newDx, dy: newDy };
 							
@@ -645,18 +565,15 @@
 			
 			$document.on("mouseup touchend",function(e){
 				move.removeClass('boxShadow').removeClass('dragging');
-				
-				if (moveIsDragged == false) { 	
-					$(this).off("mousemove touchmove mouseup touchend");
-					return; 
-				}
+				$document.off("mousemove touchmove mouseup touchend");
+				if (moveIsDragged == false) { 	return;   }
 		
-				move[0].style.webkitTransform = 'translateZ(0) translate3d(' + 0 + 'px, ' + 0 + 'px, 0px)';
-				move.css({
-					top: targetOffsetY + movePos.dy,
-					left: targetOffsetX + movePos.dx
-				}) 
-				$(this).off("mousemove touchmove mouseup touchend");
+				if (transSupport()) {
+					move[0].style[transformPrefix] = 'translateZ(0) translate3d(' + 0 + 'px, ' + 0 + 'px, 0px)';		
+				}
+				move[0].style.top = targetOffsetY + movePos.dy + 'px'
+				move[0].style.left = targetOffsetX + movePos.dx + 'px'
+				
 
 				draggie.position.y = targetOffsetY + movePos.dy
 				draggie.position.x = targetOffsetX + movePos.dx
@@ -666,13 +583,13 @@
 			});
 		});
 			
-	};
+	}; 
 	
 	
 	var instanceArr = [];	
 	
 	$.fn.jumbleScramble = function(options, arg1, arg2) { 							// jumbleScramble fn
-				
+			console.time(name)	
 		if (typeof options === 'string') {											// if a metod is calles
 			var self = this;
 			var thisId  = ( options == 'remove' ? this.parent().parent().attr('id') : this.attr('id') );
@@ -690,13 +607,10 @@
 				instanceArr.push(new JumbleScramble(this, options, arg1, arg2)) 	
 			}).promise().done(function (){
 				if (!!options.layoutComplete )options.layoutComplete(instanceArr);
-				
+				console.timeEnd(name)
 			});			
 		}
 	
 	};	
-
-	 
-
 
 })(jQuery);
