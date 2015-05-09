@@ -18,7 +18,7 @@ if (!$.support.transition) {
                  .on('selectstart', false);
     };
 })(jQuery);
-			
+		$('body').disableSelection();	
 			var isVertical = true;
 			
 			if (isVertical == true) {

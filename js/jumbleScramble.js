@@ -37,9 +37,49 @@
 
 	};
 	
+/* 	(function($) {
+		$.fn.drags = function(opt) {
+
+			
+
+			var $el = this;
+			
+
+			return $el.on("mousedown", function(e) {
+			
+				var $drag = $(this).addClass('draggable');
+				
+			
+					drg_h = $drag.outerHeight(),
+					drg_w = $drag.outerWidth(),
+					pos_y = $drag.offset().top + drg_h - e.pageY,
+					pos_x = $drag.offset().left + drg_w - e.pageX;
+				
+				$drag.on("mousemove", function(e) {
+					$('.draggable').offset({
+						top:e.pageY + pos_y - drg_h,
+						left:e.pageX + pos_x - drg_w
+					})
+				});
+				e.preventDefault(); // disable selection
+			}).on("mouseup", function() {
+			
+					$(this).removeClass('draggable');
+				
+			});
+
+		}
+	})(jQuery);
+	 */
+	
+	
+	
+	
+	
+	
 	function addHandlers(thisElts, elt, o, div) {
 			var parentContainment = ( $('#frame').length ? $('#frame') : div );		// use '.#frame' if it exists
-			if (o.isVertical ? axis = 'y' : axis = 'false')
+			o.isVertical ? axis = 'y' : axis = 'false'
 			
 			/* elt.draggable({															// make the element draggable
 				iframeFix: true,
@@ -52,32 +92,26 @@
 				stop:function(evt, ui){ onStop(evt, ui, elt, div, o);}
 			});
 			 */
-			var $draggable = elt.draggabilly({															// make the element draggable
-				/* 
-				drag: function(evt, ui){ onDrag(evt, ui, elt, thisElts, o);}, 			
-				start: function(evt, ui){ onStart(elt, o); },								
-				stop:function(evt, ui){ onStop(evt, ui, elt, div, o);} */
-			});
+			 
+			/*  var $draggable = elt.draggabilly(); 
 			
 			$draggable.on( 'dragStart', function(evt, ui){ onStart(elt, o); })
 			$draggable.on( 'dragMove', function(evt, ui){ 
 				var draggie = $(this).data('draggabilly');
+				onDrag(ui, draggie, elt, thisElts, o); 			
+			})	 	
+			$draggable.on( 'dragEnd', function(evt, ui){ 				
+				var draggie = $(this).data('draggabilly');				
+				onStop(ui, draggie, elt, div, o);			
+			})  */
+			 
 			
-				
-				onDrag(ui, draggie, elt, thisElts, o); 
-			
-			})
-			
-			$draggable.on( 'dragEnd', function(evt, ui){ 
-				
-				var draggie = $(this).data('draggabilly');
-				
-				onStop(ui, draggie, elt, div, o);
-			
-			})
-			
-		
+					
 	};
+	
+	
+	
+	
 	
 	function setChars (div) {
 		div.find('li').each(function (i,e) {	
@@ -111,6 +145,8 @@
 		ui.position.top = draggie.position.y;
 		ui.position.left = draggie.position.x;
 		
+		console.log(ui.position.top)
+		
 		var thisElt = this;																//must be saved to a variable to avoid random 
 																				//occurrences of non-moving elements in safari iPad.
 		oldPos = (thisElt.eltPos != null ? thisElt.eltPos : ui.position); 			//find the old position stored on the $object 
@@ -129,7 +165,7 @@
 			var tempArr = []
 			for(var i = 0; i < adjConElts.length; i++){ 			//Loop the array
 					var obj = adjConElts[i]
-					if (ui.position.top  < obj.pos.top + obj.completeHeight/2) {
+					if (draggie.position.y  < obj.pos.top + obj.completeHeight/2) {
 							
 						if (obj.moved == false) {
 							tempArr.push(i)
@@ -225,7 +261,7 @@
 				if (elt.insertPos > 0) {
 					
 					var obj = adjConElts[elt.insertPos -1]
-					if (ui.position.top  < obj.pos.top + obj.completeHeight/2 && obj.moved == false) {	
+					if (draggie.position.y  < obj.pos.top + obj.completeHeight/2 && obj.moved == false) {	
 					
 						obj[0].style[transitionPrefix] = '250ms ease';
 						obj[0].style[transformPrefix] = 'translateY(' + elt.completeHeight + 'px)';	
@@ -265,7 +301,7 @@
 	
 				if (elt.insertPos < adjConElts.length) {
 					var obj = adjConElts[elt.insertPos]
-					if (ui.position.top  + elt.completeHeight > obj.pos.top + obj.completeHeight/2 && obj.moved == true) {
+					if (draggie.position.y  + elt.completeHeight > obj.pos.top + obj.completeHeight/2 && obj.moved == true) {
 							obj.transToZero();
 							obj.moved = false;
 							elt.insertPos = obj.n +1;
@@ -299,11 +335,8 @@
 	};
 
 	
-	function onStop(ui, draggie, elt, div, o)	{									// Stop
-		ui.position = {};
-		//console.log(ui.position.x)
-		ui.position.top = draggie.position.y;
-		ui.position.left = draggie.position.x;
+	function onStop(evt, draggie, elt, div, o)	{									// Stop
+	
 				
 		
 		if (trigger) {													// animate lis in previous container.
@@ -322,8 +355,8 @@
 			};
 				
 		}
-		
-		animateBack(elt, ui);
+		console.log(elt)
+		animateBack(elt, draggie);
 			
 		/* var	outAnim = ( o.isVertical && transSupport ? ({'box-shadow': 'none'}) : ({'opacity': 1.0, 'z-index':5 }) ); */
 		
@@ -360,7 +393,7 @@
 					var vdvddv = instanceArr[elt.movesTo].elts;									// append to previous
 					
 					instanceArr[elt.belongsTo].addLiElem( vdvddv[vdvddv.length -1].text(), 0 )
-					instanceArr[elt.movesTo].removeLiElem( vdvddv[vdvddv.length -1] )  			// append to previous end
+					instanceArr[elt.movesTo].removeLiElem( vdvddv[vdvddv.length -1] )  			// append to previous end 
 					
 					instanceArr[elt.belongsTo].removeLiElem(elt) 
 				}  
@@ -370,18 +403,18 @@
 		
 	};
 	
-	function animateBack (elt, ui) {					// FIX-ME add to prototype
+	function animateBack (elt, draggie) {					// FIX-ME add to prototype
 		if (trigger) {
 			var animateToPos = elt.insertPos == instanceArr[elt.movesTo].elts.length && elt.insertPos > 0? instanceArr[elt.movesTo].elts[elt.insertPos -1].pos.top + instanceArr[elt.movesTo].elts[elt.insertPos -1].completeHeight: elt.insertPos == 0 ? 0 :instanceArr[elt.movesTo].elts[elt.insertPos].pos.top - elt.completeHeight;
 			
 			//var animateBack = {left: adjacentDir, top : animateToPos, x:  ui.position.left - adjacentDir, y:  ui.position.top - animateToPos }	
-			var thisLeft = adjacentDir, thisTop = animateToPos, thisX = ui.position.left - adjacentDir, thisY = ui.position.top - animateToPos;
+			var thisLeft = adjacentDir, thisTop = animateToPos, thisX = draggie.position.x - adjacentDir, thisY = draggie.position.y - animateToPos;
 			
 		}
 		else {
 			
 		//	var animateBack = {left: elt.pos.left, top : elt.pos.top, x:  ui.position.left - elt.pos.left, y:  ui.position.top - elt.pos.top }
-			var thisLeft = elt.pos.left, thisTop = elt.pos.top, thisX = ui.position.left - elt.pos.left, thisY = ui.position.top - elt.pos.top;
+			var thisLeft = elt.pos.left, thisTop = elt.pos.top, thisX = draggie.position.x - elt.pos.left, thisY = draggie.position.y - elt.pos.top;
 		}
 		
 		elt[0].style.left = thisLeft + 'px'
@@ -506,7 +539,7 @@
 			})
 					
 			addToObject(thisElts, elt, n, $thisHeight, $thisWidth, o, thisContainer, adjCon)
-			addHandlers(thisElts, elt, o, div);
+			//addHandlers(thisElts, elt, o, div);
 			
 			
 			for (var i=0;i<tempArr.length;i++) { 
@@ -549,12 +582,94 @@
 			}	
 			
 			addToObject(thisElts, elt, n, $thisHeight, $thisWidth, o, thisContainer, adjCon);		
-			addHandlers(thisElts, elt, o, div);			
+						
 			n = n+1;					
 		}
+		this.addHandlers();
 		
 		o.isVertical ? 	div.find('ul').css({height: ulSize }) : div.find('ul').css({width:ulSize, height: li.outerHeight(true) + 'px' }); 	// Update the ul size
 
+	};
+	
+	JumbleScramble.prototype.addHandlers = function () {
+	
+		var targetOffsetY; 
+		var targetOffsetX;
+		var $document = $(document);
+		var div = this.div;
+		var thisContainer = this.container
+		var o = this.options;
+		var thisElts = this.elts	
+		var move;
+		var elt;
+		var moveIsDragged = false;
+		var draggie = {};
+		draggie.position = {};
+		
+		
+		
+		div.on("mousedown touchstart",'.listItem',function(me){
+			move = $(this);
+
+			move[0].style[transitionPrefix] = '0s';
+			
+				 
+			if (me.type == 'touchstart') { me = me.originalEvent.touches[0] }
+				var startX = me.pageX, startY = me.pageY;
+			
+			targetOffsetY  = me.target.offsetTop;
+			targetOffsetX = me.target.offsetLeft;
+			
+			$document.on("mousemove touchmove",function(e){
+				e.preventDefault();
+				move.addClass('boxShadow').addClass('dragging');
+				moveIsDragged = true;
+				if (e.type == 'touchmove') { e = e.originalEvent.changedTouches[0]}	
+				var newDx = e.pageX - startX,
+					newDy = e.pageY - startY;
+			
+				move[0].style.webkitTransform = 'translateZ(0) translate3d(' + newDx + 'px, ' + newDy + 'px, 0px)';
+				
+			
+				// we need to save last made offset
+				move.data('lastTransform', {dx: newDx, dy: newDy });
+				
+				var ui = {};				
+				draggie.position.y = targetOffsetY + newDy
+				draggie.position.x = targetOffsetX + newDx
+				elt = instanceArr[thisContainer].elts[move.index()]
+				
+				onDrag(ui, draggie, elt, thisElts, o); 
+				
+		
+			});
+			
+			$document.on("mouseup touchend",function(e){
+				
+			
+			if (moveIsDragged == false) { 			
+				$(this).off("mousemove touchmove mouseup touchend");
+				return; 
+			}
+			
+			//console.log(move.data('lastTransform'))
+			move[0].style.webkitTransform = 'translateZ(0) translate3d(' + 0 + 'px, ' + 0 + 'px, 0px)';
+			move.css({
+				top: targetOffsetY + move.data('lastTransform').dy,
+				left: targetOffsetX + move.data('lastTransform').dx
+			}) 
+			
+			$(this).off("mousemove touchmove mouseup touchend");
+
+			draggie.position.y = targetOffsetY + move.data('lastTransform').dy
+			draggie.position.x = targetOffsetX + move.data('lastTransform').dx
+			
+			moveIsDragged = false
+			onStop(e, draggie, elt, div, o)
+		});
+		});
+		
+	
 	};
 	
 	var instanceArr = [];	
@@ -583,6 +698,8 @@
 		}
 	
 	};	
+
+	 
 
 
 })(jQuery);
