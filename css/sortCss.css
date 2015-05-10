@@ -1,10 +1,11 @@
 *{
   margin:0;
   padding:0;
-  -webkit-transform: translate3d(0, 0, 0);
+ -webkit-transform: translate3d(0, 0, 0);
    -moz-transform: translate3d(0, 0, 0);
    -ms-transform: translate3d(0, 0, 0);
-   transform: translate3d(0, 0, 0); 
+   transform: translate3d(0, 0, 0);  
+  
 }
 
 #container {
@@ -21,6 +22,7 @@ width: 495px;
 height: 630px;
 position: absolute;
 margin-left: 20px;
+z-index:10;
 
    
 }
@@ -29,13 +31,43 @@ width: 495px;
 height: 630px;
 position: absolute;
 margin-left: 450px;
+z-index:5;
    
 }
-ul.splitList {
+
+#jMyPuzzleId2 {
+width: 900px;
+height: 50px;
+position: absolute;
+left:0px;
+
+   
+}
+
+#jMyPuzzleId3 {
+width: 900px;
+height: 50px;
+position: absolute;
+left:0px;
+margin-top: 50px;
+   
+}
+
+
+.splitList {
 width: inherit;
 height: 430px;
 position: absolute;
 display: block;
+
+}
+
+.splitList-horizontal {
+width: inherit;
+
+position: absolute;
+display: block;
+
 }
 
 .listItem {
@@ -53,6 +85,9 @@ color: rgba(34, 34, 34,1);
 -webkit-box-shadow: 0;
 -moz-box-shadow: 0;
 box-shadow: 0;
+background: white;
+
+
 
 }
 
@@ -60,41 +95,27 @@ box-shadow: 0;
 -webkit-box-shadow: 0px 2px 10px rgba(0,0,0,.7);
 -moz-box-shadow: 0px 2px 10px rgba(0,0,0,.7);
 box-shadow: 0px 2px 10px rgba(0,0,0,.7);
+
 }
 
 
-#jMyPuzzleId2 {
-width: 900px;
-height: 630px;
-position: absolute;
-left:0px;
-   
-}
+
 
 .listItem-horizontal {
 position: absolute;
 list-style: none;
 
-font-size:18px;
+font-size:22px;
 margin:2px;
 padding: 7px;
 padding-left: 2px;
 border: 1px solid black;
 color: rgba(34, 34, 34,1);
+background: yellowgreen;
+cursor: move;
+touch-action: none;
+-webkit-user-select: none;
+
 }
 
 
-li:active, .ui-draggable-dragging {
-   cursor: -webkit-grabbing;
-  cursor: -moz-grabbing;
-  cursor: -o-grabbing;
-  cursor: -ms-grabbing;
-  cursor: grabbing; 
-
-  -webkit-user-select: none;
-  -webkit-tap-highlight-color: rgba(0,0,0,0);
-  -webkit-touch-callout: none; 
-  /*TODO: add prefixes for all browsers*/
-  z-index: 9999;
-  
-} 

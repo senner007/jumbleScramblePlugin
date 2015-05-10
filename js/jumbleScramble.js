@@ -14,16 +14,17 @@
 		return false;
 	}
 	
+	var ifGpu = transSupport() ? 'translate3d(0px,0px,0px) translateZ(0)' : 'translate(0px,0px)';
 	var testElement = document.createElement('div');
     var transitionPrefix = "webkitTransition" in testElement.style ? "webkitTransition" : "transition";
     var transformPrefix = "webkitTransform" in testElement.style ? "webkitTransform" : "-ms-transform" in testElement.style && transSupport() == false ? "-ms-transform" : "transform";  //if ie9
-	
+
 
 	$.fn.transToZero = function () {
 		var elt = this[0];
 		setTimeout(function(){ 
 				elt.style[transitionPrefix] = '250ms ease';					
-				elt.style[transformPrefix] = 'translate(0px,0px)';	// translateZ doesn't work for ie9	
+				elt.style[transformPrefix] = ifGpu	// translateZ doesn't work for ie9	
 		}, 0);
 	};
 	
@@ -60,13 +61,6 @@
 		});							
 	};
 	
-	function onStart(elt, o) {																// Start			
-		//var	inAnim = ( o.isVertical && transSupport ? ({'box-shadow': '0px 2px 10px rgba(0,0,0,.7)'}) : ({'opacity': 0.4, 'z-index':200}) );				
-		//elt.css(inAnim);
-		elt.addClass('boxShadow')
-		elt[0].style[transitionPrefix] = '0s';
-	};
-	
 	
 	var trigger = false;
 	var oldPos;
@@ -83,7 +77,7 @@
 		oldPos = (thisElt.eltPos != null ? thisElt.eltPos : ui.position); 			//find the old position stored on the $object 
 		thisElt.eltPos = ui.position;													//its current position derived from $draggable object		
 			
-		if (instanceArr.length > 1) {
+		if (instanceArr.length > 1 && o.isVertical) {
 			adjConElts = instanceArr[elt.movesTo].elts;
 			adjacentDir = instanceArr[elt.movesTo].div.offset().left -  elt.parent().offset().left;	
 			var dirSwitch = (elt.belongsTo % 2 == 0 ? thisElt.eltPos.left > adjacentDir/2 : thisElt.eltPos.left < adjacentDir/2);  
@@ -91,7 +85,7 @@
 		}
 		
 		if (dirSwitch && trigger == false) {								// trigger animations for adjacent container
-		
+			console.log('hello')
 			trigger = true;
 			var tempArr = []
 			for(var i = 0; i < adjConElts.length; i++){ 			//Loop the array
@@ -511,6 +505,7 @@
 		var $document = $(document);
 		var div = this.div;
 		var thisContainer = this.container
+		var adjCon = this.adjCon;
 		var o = this.options;
 		var thisElts = this.elts	
 		var move;
@@ -522,12 +517,19 @@
 		var ui = {};
 		var liSelector = o.isVertical == true ? '.listItem' : '.listItem-horizontal'
 	
+	
 		
 		div.on("mousedown touchstart",liSelector,function(me){
 			move = $(this);
 
+		/* 	move[0].style[transitionPrefix] = '0.2s'; */
+			move[0].style.zIndex = '5';
+			instanceArr[adjCon].div[0].style.zIndex = '-1'
+			div[0].style.zIndex = '1'
+			
 			move[0].style[transitionPrefix] = '0s';
 			move.addClass('boxShadow').addClass('dragging');
+		/* 	move[0].style[transformPrefix] = 'scale(0.95,1)';	 */
 				 
 			if (me.type == 'touchstart') { me = me.originalEvent.touches[0] }
 				var startX = me.pageX, startY = me.pageY;
@@ -536,6 +538,10 @@
 			targetOffsetX = me.target.offsetLeft;
 			
 			elt = thisElts[move.index()]
+			
+		
+			
+			
 			
 			$document.on("mousemove touchmove",function(e){
 				e.preventDefault();
@@ -546,7 +552,9 @@
 					newDy = e.pageY - startY;
 			
 				if (transSupport()) {
-					move[0].style[transformPrefix] = 'translateZ(0) translate3d(' + newDx + 'px, ' + newDy + 'px, 0px)';			
+						
+					move[0].style[transformPrefix] = 'translate3d(' + newDx + 'px, ' + newDy + 'px, 0px) translateZ(0)';	
+						
 				}
 				else {
 					move[0].style.top = targetOffsetY + movePos.dy + 'px'
@@ -564,6 +572,7 @@
 			});
 			
 			$document.on("mouseup touchend",function(e){
+				move[0].style.zIndex = '1';
 				move.removeClass('boxShadow').removeClass('dragging');
 				$document.off("mousemove touchmove mouseup touchend");
 				if (moveIsDragged == false) { 	return;   }

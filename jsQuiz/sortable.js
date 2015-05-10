@@ -23,7 +23,7 @@ if (!$.support.transition) {
 			
 			if (isVertical == true) {
 				
-				$("#jMyPuzzleId2").remove();
+				$("#jMyPuzzleId2, #jMyPuzzleId3").remove();
 
 				$("#jMyPuzzleId0, #jMyPuzzleId1").jumbleScramble({
 						isVertical: isVertical,
@@ -40,9 +40,9 @@ if (!$.support.transition) {
 
 				$("#jMyPuzzleId0, #jMyPuzzleId1").remove();
 				
-				$("#jMyPuzzleId2").jumbleScramble({
+				$(".jMyPuzzle").jumbleScramble({
 						isVertical: isVertical,
-						setChars: true,
+						setChars: false,
 						layoutComplete: function (instanceArray) {	
 								console.log(instanceArray)
 								// $(".jMyPuzzle").eq(0).jumbleScramble('add', 'Lorem ipsum dolor.', 6) 
