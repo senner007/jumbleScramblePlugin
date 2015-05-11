@@ -4,5 +4,6 @@ Todo:
 + animateBack to prototype
 + prevent div overflow to prototype
 + animate add and remove method
-+ setChars function to prototype
-+ calculate div offset for trigger on init
++ crossdrop for horizontal layout
+
+
