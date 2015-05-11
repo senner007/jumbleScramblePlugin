@@ -3,7 +3,12 @@ Todo:
 + lock method prototype
 + animateBack to prototype
 + prevent div overflow to prototype
-+ animate add and remove method
 + crossdrop for horizontal layout
++ prevent multi touch
++ prevent mouse event on touch device
+
+
+Known Issues:
+If the item is dropped outside div's parent container, the item will 'wiggle' in ie/firefox when animating to its position.
 
 

@@ -19,13 +19,15 @@
     var transitionPrefix = "webkitTransition" in testElement.style ? "webkitTransition" : "transition";
     var transformPrefix = "webkitTransform" in testElement.style ? "webkitTransform" : "-ms-transform" in testElement.style && transSupport() == false ? "-ms-transform" : "transform";  //if ie9
 
-
 	$.fn.transToZero = function () {
 		var elt = this[0];
-		setTimeout(function(){ 
-				elt.style[transitionPrefix] = '250ms ease';					
-				elt.style[transformPrefix] = ifGpu	// translateZ doesn't work for ie9	
-		}, 0);
+
+		window.getComputedStyle(elt)[transformPrefix]	// needed to apply the transition style dynamically 
+	
+		elt.style[transitionPrefix] = '250ms ease';	
+						
+		elt.style[transformPrefix] =  ifGpu// translateZ doesn't work for ie9	
+		
 	};
 	
 	function addToObject(thisElts, elt, n, $thisHeight, $thisWidth, o, thisContainer, adjCon) {
@@ -63,8 +65,8 @@
 		});								
 	};
 	
-	
 	var trigger = false;
+	var moveElmUp;
 	function onDrag(ui, draggie, elt, elts, o){													// Drag
 		
 		ui.position = {};
@@ -82,8 +84,11 @@
 			var dirSwitch = (elt.belongsTo % 2 == 0 ? thisElt.eltPos.left > adjacentDir/2 : thisElt.eltPos.left < adjacentDir/2);  		
 		}
 		
-		if (dirSwitch && trigger == false) { onDragAdj.triggerOn(elt, draggie, adjConElts); }; 								// trigger animations for adjacent container
-		if (!dirSwitch && trigger == true && Object.keys(elts).length > 1) { onDragAdj.triggerOff(elt, adjConElts);	};		// go back to original container
+			
+		if (dirSwitch && trigger == false) { onDragAdj.triggerOn(elt, draggie, adjConElts, elts, o); }; 								// trigger animations for adjacent container
+		if (!dirSwitch && trigger == true && Object.keys(elts).length > 1) { onDragAdj.triggerOff(elt, draggie, adjConElts, elts, thisElt, onDragElts);	};		// go back to original container
+		
+		
 			
 		if(!o.isVertical && thisElt.eltPos.left != oldPos.left) { move = (thisElt.eltPos.left > oldPos.left ? 'forward' : 'backward');	}		// check whether the move is forward or backward			
 		else if (o.isVertical && thisElt.eltPos.top != oldPos.top) { move = (thisElt.eltPos.top > oldPos.top ? "down" : "up");	}				// check whether the move is down or up				
@@ -134,28 +139,11 @@
 		} 
 		if(move == 'up'){																		//  move up	
 			if (trigger) {																		// trigger  for animating adjacent container				
-				onDragAdj.moveUp(elt, draggie, adjConElts);	
+					onDragAdj.moveUp(elt, draggie, adjConElts);	
 			}   
 			else {			
 				if(elt.n > 0){
-					var eltPrev = elts[elt.n - 1];					 
-					var eltPrevBound = eltPrev.pos.top + parseInt(eltPrev.completeHeight / 2);
-					if(thisElt.eltPos.top < eltPrevBound){	
-						if (eltPrev.hasClass('locked') ){ return; } 
-						elt.insertBefore(eltPrev);							
-						elt.pos.top = eltPrev.pos.top;
-						eltPrev.pos.top += elt.completeHeight;			
-						elts[elt.n] = eltPrev;
-						elts[elt.n - 1] = elt;																						
-						elts[elt.n].n = elt.n; 
-						elt.n = elt.n - 1; 
-
-						eltPrev[0].style[transitionPrefix] = '0s';
-						eltPrev[0].style.top =  eltPrev.pos.top + 'px';	
-						eltPrev[0].style[transformPrefix] = 'translateY(' + -(elt.completeHeight) + 'px)'; 
-						eltPrev.transToZero();
-	
-					}
+					onDragElts.eltsMoveUp(elt, elts, thisElt)
 				}
 			}
 		}	
@@ -185,11 +173,40 @@
 				}
 			}
 		}
+		
 	};
+	
+	
+	var onDragElts = {
+		eltsMoveUp : function (elt, elts, thisElt) {
+			var eltPrev = elts[elt.n - 1];					 
+			var eltPrevBound = eltPrev.pos.top + parseInt(eltPrev.completeHeight / 2);
+			if(thisElt.eltPos.top < eltPrevBound){	
+				//if (eltPrev.hasClass('locked') ){ return; } 
+				elt.insertBefore(eltPrev);							
+				elt.pos.top = eltPrev.pos.top;
+				eltPrev.pos.top += elt.completeHeight;			
+				elts[elt.n] = eltPrev;
+				elts[elt.n - 1] = elt;																						
+				elts[elt.n].n = elt.n; 
+				elt.n = elt.n - 1; 
+
+				eltPrev[0].style[transitionPrefix] = '0s';
+				eltPrev[0].style.top =  eltPrev.pos.top + 'px';	
+				eltPrev[0].style[transformPrefix] = 'translateY(' + -(elt.completeHeight) + 'px)'; 
+				eltPrev.transToZero();
+			}
+		},
+		
+		
+		
+	}
+	
+
 	
 	var onDragAdj = {
 		
-		triggerOn : function (elt, draggie, adjConElts) {
+		triggerOn : function (elt, draggie, adjConElts, elts, o) {
 			trigger = true;
 			var tempArr = []
 			for(var i = 0; i < adjConElts.length; i++){ 							//Loop the array
@@ -208,9 +225,32 @@
 					};
 				};
 			elt.insertPos = tempArr[0] >= 0 ? tempArr[0] : adjConElts.length;
+			
+																									// reorder the elements in the originating container 
+			 for (var i=elt.n + 1;i<elts.length;i++) {
+						var eltNext = elts[elt.n + 1];
+						eltNext.pos.top = elt.pos.top;
+						eltNext.pos.left = o.isVertical ? 0 : elt.pos.left;
+						elt.pos.top += eltNext.completeHeight;
+						elt.pos.left += o.isVertical ? 0 : eltNext.completeEidth;							
+						elts[elt.n] = eltNext;
+						elts[elt.n + 1] = elt;																
+						elts[elt.n].n = elt.n; 
+						elt.n = elt.n + 1; 
+						
+						eltNext[0].style[transitionPrefix] = '0s';
+						eltNext[0].style.top = eltNext.pos.top + 'px';
+						eltNext[0].style[transformPrefix] = 'translateY(' + elt.completeHeight  + 'px)';
+						eltNext.transToZero();
+			 
+			}; 
+			elt.insertAfter(eltNext);
+		
+			
 		},
-		triggerOff : function (elt, adjConElts) {
+		triggerOff : function (elt, draggie, adjConElts, elts, thisElt, onDragElts) {									// going back to the originating container
 			trigger = false;
+		
 			
 			 for(var ind = 0; ind < adjConElts.length; ind++){ 						//Loop the array starting from the first element to be moved down
 				var objectNumber = adjConElts[ind];
@@ -219,8 +259,16 @@
 					objectNumber.transToZero();
 						objectNumber.moved = false;
 						objectNumber.pos.top = objectNumber.pos.top - elt.completeHeight;
-				}			
-			}	
+				}
+			}
+			 for (var i=0;i<elts.length-1;i++) {
+					var obj = elts[i]
+						
+					//if (draggie.position.y  < obj.pos.top + obj.completeHeight/2) {								
+								onDragElts.eltsMoveUp(elt, elts, thisElt)
+					//}	
+			 }
+			
 		},
 		moveUp : function (elt, draggie, adjConElts) {
 			if (elt.insertPos > 0) {				
@@ -251,13 +299,13 @@
 	
 	function onStop(evt, draggie, elt, div, o)	{									// Stop
 		
-		if (trigger) {
+		/* if (trigger) {
 			for (var i=elt.n + 1;i<instanceArr[elt.belongsTo].elts.length;i++) { 
 				instanceArr[elt.belongsTo].elts[i][0].style[transitionPrefix] = '250ms'
 				instanceArr[elt.belongsTo].elts[i][0].style[transformPrefix] = 'translate(' + -(elt.completeWidth)  + 'px,' +  -(elt.completeHeight)  + 'px)';
 				};
-		}
-		
+		} */
+	
 		animateBack(elt, draggie);
 		
 		elt[0].style[transitionPrefix] = 'box-shadow 250ms';
@@ -276,11 +324,12 @@
 			}
 			if (trigger) {
 				
+				
+				instanceArr[elt.belongsTo].removeLiElem(elt, false) 
 				instanceArr[elt.movesTo].addLiElem(elt.text(), elt.insertPos);
-				instanceArr[elt.belongsTo].removeLiElem(elt, elt.insertPos == instanceArr[elt.movesTo].elts.length -1 ? true : false) 
 				trigger = false;
 				
-			  var instMovesTo = instanceArr[elt.movesTo].elts;								  					// append to previous
+			    var instMovesTo = instanceArr[elt.movesTo].elts;								  					// append to previous
 				
 				instanceArr[elt.belongsTo].addLiElem( instMovesTo[instMovesTo.length -1].text(), 0 , true)		// add true to animate 
 				instanceArr[elt.movesTo].removeLiElem( instMovesTo[instMovesTo.length -1] , true)  					// append to previous end     
@@ -362,12 +411,16 @@
 			};
 			thisElts.length = thisElts.length -1
 			
-			console.log(elt)
-			if (removeTrans) { elt[0].style[transformPrefix] = 'scale(0.5,0.5)'; elt[0].style.opacity = '0'; elt[0].style[transitionPrefix] = '250ms'; }
-			setTimeout(function(){ 
-				elt.remove()
-			}, 250);
 			
+			if (removeTrans) { 
+				elt[0].style[transformPrefix] = 'scale(0.5,0.5)'; 
+				elt[0].style.opacity = '0'; 
+				elt[0].style[transitionPrefix] = '250ms'; 
+				setTimeout(function(){ 
+					elt.remove()
+				}, 250);
+			}
+			else {elt.remove()}
 				
 			
 			this.ul.css({
@@ -487,7 +540,7 @@
 		o.isVertical ? 	div.find('ul').css({height: ulSize }) : div.find('ul').css({width:ulSize, height: li.outerHeight(true) + 'px' }); 	// Update the ul size
 
 	};
-	
+
  	JumbleScramble.prototype.addHandlers = function () {
 	
 		var targetOffsetY; 
@@ -510,7 +563,9 @@
 	
 		
 		div.on("mousedown touchstart",liSelector,function(me){
+	
 			move = $(this);
+			
 
 		/* 	move[0].style[transitionPrefix] = '0.2s'; */
 			move[0].style.zIndex = '5';
@@ -528,10 +583,7 @@
 			targetOffsetX = me.target.offsetLeft;
 			
 			elt = thisElts[move.index()]
-			
-		
-			
-			
+	
 			
 			$document.on("mousemove touchmove",function(e){
 				e.preventDefault();
