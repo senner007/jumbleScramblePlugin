@@ -351,8 +351,9 @@
 	var defaults = {
 		isVertical: false,
 		setChars: false,
+		cutOff: false,
 		layoutComplete: function () {}
-	}
+		}
 	
 	var conCount = 0;
 	function JumbleScramble(element, options) {					// Constructor function 
@@ -364,7 +365,7 @@
 		this.adjCon = this.container % 2 == 0 ? this.container +1 : this.container -1;
 		this.options = $.extend( {}, defaults, options) ;
 		this.init();
-		this.cutOff = options.cutOff[conCount];
+		this.cutOff = this.options.cutOff[conCount];
 		
 		conCount++;
 		
