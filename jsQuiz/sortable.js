@@ -22,7 +22,7 @@ $(document).ready(function() {
 
 				$(".jMyPuzzle").css('opacity',1).jumbleScramble({
 						isVertical: isVertical,
-						cutOff: 600,
+						cutOff: [600,800],
 						layoutComplete: function (instanceArray) {	
 								console.log(instanceArray)
 							//	 $(".jMyPuzzle").eq(0).jumbleScramble('add', 'Lorem ipsum dolor.', 6) 

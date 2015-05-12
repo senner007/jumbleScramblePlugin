@@ -312,7 +312,7 @@
 				instanceArr[elt.movesTo].addLiElem(elt.text(), elt.insertPos);
 				crossTrigger = false;
 				
-				instanceArr[elt.movesTo].cutOff()
+				instanceArr[elt.movesTo].cutOffMethod()
 				
 			   /*  var instMovesTo = instanceArr[elt.movesTo].elts;								  					// append to previous
 				
@@ -364,12 +364,13 @@
 		this.adjCon = this.container % 2 == 0 ? this.container +1 : this.container -1;
 		this.options = $.extend( {}, defaults, options) ;
 		this.init();
+		this.cutOff = options.cutOff[conCount];
 		
 		conCount++;
 		
 	};	
-	JumbleScramble.prototype.cutOff = function () {
-		var oCutOff = this.options.cutOff;
+	JumbleScramble.prototype.cutOffMethod = function () {
+		var oCutOff = this.cutOff;
 		
 		var eltsHeight = 0;
 		for (var i=0;i<this.elts.length;i++) {
