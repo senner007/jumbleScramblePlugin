@@ -43,7 +43,8 @@
 			thisElts[n].o = o;																// its current position (as per the other elements)
 			thisElts[n].moved = false;			
 			thisElts[n].belongsTo = thisContainer;
-			thisElts[n].movesTo = adjCon;				
+			thisElts[n].movesTo = adjCon;
+			thisElts[n].currentPos = {};	
 
 	};
 
@@ -65,61 +66,114 @@
 		});								
 	};
 	
-	var trigger = false;
-	var moveElmUp;
-	function onDrag(ui, draggie, elt, elts, o){													// Drag
+	var crossTrigger = false;
+
+	function onDrag(elt, elts, o){													// Drag
 		
-		ui.position = {};
-		ui.position.top = draggie.position.y;											// Redundancy - FIX ME
-		ui.position.left = draggie.position.x;
-				
-		var thisElt = this;																//must be saved to a variable to avoid random 
-																				//occurrences of non-moving elements in safari iPad.
-		var oldPos = (thisElt.eltPos != null ? thisElt.eltPos : ui.position); 			//find the old position stored on the $object 
-		thisElt.eltPos = ui.position;													//its current position derived from $draggable object		
+		var ui = {};	
+		ui.top = elt.currentPos.top;											// Redundancy - FIX ME
+		ui.left = elt.currentPos.left;
 			
-		if (instanceArr.length > 1 && o.isVertical) {
+		var thisElt = this;															//must be saved to a variable to avoid random 
+																					// occurrences of non moving objects on ipad
+		var oldPos = (thisElt.eltPos != null ? thisElt.eltPos : ui); 			//find the old position stored on the $object
+		thisElt.eltPos = ui;													//its current position derived from $draggable object		
+		
+		
+		if (instanceArr.length > 1 && o.isVertical) {			
 			var adjConElts = instanceArr[elt.movesTo].elts;
 			var adjacentDir = instanceArr[elt.movesTo].divOffset.left -  instanceArr[elt.belongsTo].divOffset.left;	
-			var dirSwitch = (elt.belongsTo % 2 == 0 ? thisElt.eltPos.left > adjacentDir/2 : thisElt.eltPos.left < adjacentDir/2);  		
+			var dirSwitch = (elt.belongsTo % 2 == 0 ? thisElt.eltPos.left > adjacentDir/2 : thisElt.eltPos.left < adjacentDir/2);  				
 		}
 		
-			
-		if (dirSwitch && trigger == false) { onDragAdj.triggerOn(elt, draggie, adjConElts, elts, o); }; 								// trigger animations for adjacent container
-		if (!dirSwitch && trigger == true && Object.keys(elts).length > 1) { onDragAdj.triggerOff(elt, draggie, adjConElts, elts, thisElt, onDragElts);	};		// go back to original container
+		/*--------------------------------------------------------------------*/	
+		if (dirSwitch && crossTrigger == false) { 																			// trigger animations for adjacent container
+			onDragAdj.triggerOn(elt, adjConElts, elts, o); 
+			crossTrigger = true;
+		}; 							
+		if (!dirSwitch && crossTrigger == true && Object.keys(elts).length > 1) { 											// go back to originating container
+			onDragAdj.triggerOff(elt, adjConElts, elts);
+			crossTrigger = false;			
+		};		
 		
-		
-			
-		if(!o.isVertical && thisElt.eltPos.left != oldPos.left) { move = (thisElt.eltPos.left > oldPos.left ? 'forward' : 'backward');	}		// check whether the move is forward or backward			
-		else if (o.isVertical && thisElt.eltPos.top != oldPos.top) { move = (thisElt.eltPos.top > oldPos.top ? "down" : "up");	}				// check whether the move is down or up				
-		else {	return;	}																														// doing nothing
+		/*--------------------------------------------------------------------*/	
+		if(!o.isVertical && thisElt.eltPos.left != oldPos.left) { 															// check whether the move is 	
+			move = (thisElt.eltPos.left > oldPos.left ? 'forward' : 'backward');										    // forward, backward, up or down
+		}				
+		else if (o.isVertical && thisElt.eltPos.top != oldPos.top) { 														
+			move = (thisElt.eltPos.top > oldPos.top ? "down" : "up");	
+		}						
+		else {	return;	}																									// doing nothing
 
-		if(move == 'forward'){																    //  move forward
-			if(elt.n < elts.length-1){
-				var eltNext = elts[elt.n + 1];
-				var eltNextBound = eltNext.pos.left + parseInt(eltNext.completeWidth / 2);
-				if(thisElt.eltPos.left + elt.completeWidth > eltNextBound){						
-					if (eltNext.hasClass('locked') ){ return; }  								// don't move beyond green colored items for difficulty setting 0
-					elt.insertAfter(eltNext);
-					eltNext.pos.left = elt.pos.left;
-					elt.pos.left += eltNext.completeWidth;										//invert datas in the correspondence array
-					elts[elt.n] = eltNext;
-					elts[elt.n + 1] = elt;														//update the n of the elements
-					elts[elt.n].n = elt.n; 
-					elt.n = elt.n + 1;
-			
-					eltNext[0].style[transitionPrefix] = '0s';
-					eltNext[0].style.left = eltNext.pos.left + 'px';
-					eltNext[0].style[transformPrefix] = 'translateX(' + elt.completeWidth  + 'px)';
-					eltNext.transToZero();
-				}
+		/*--------------------------------------------------------------------*/	
+		if (move == 'forward'){																    //  move forward
+			onDragElts.eltsMoveForward(elt, elts)	
+		}
+		if (move == "backward"){																//  move backward	
+			onDragElts.eltsMoveBack(elt, elts)	
+		} 
+		if (move == 'up'){																		//  move up	
+			if (crossTrigger) {																					
+				onDragAdj.moveUp(elt, adjConElts);	
+			}   
+			else {							
+				onDragElts.eltsMoveUp(elt, elts)				
+			}
+		}	
+		if (move == 'down'){ 																	//  move down	
+		    if (crossTrigger) {																				
+					onDragAdj.moveDown(elt, adjConElts);			
+			}   
+			else {
+				onDragElts.eltsMoveDown(elt, elts)
 			}
 		}
-		else if(move == "backward"){															//  move backward	
+		
+	};
+	
+	
+	var onDragElts = {
+		eltsMoveUp : function (elt, elts) {
+			if(elt.n > 0){
+				var eltPrev = elts[elt.n - 1];					 
+				var eltPrevBound = eltPrev.pos.top + eltPrev.completeHeight / 2;
+				if(elt.currentPos.top < eltPrevBound){	
+					if (eltPrev.hasClass('locked') ){ return; } 
+					elt.insertBefore(eltPrev);							
+					elt.pos.top = eltPrev.pos.top;
+					eltPrev.pos.top += elt.completeHeight;			
+					elts[elt.n] = eltPrev;
+					elts[elt.n - 1] = elt;																						
+					elts[elt.n].n = elt.n; 
+					elt.n = elt.n - 1; 
+
+					this.eltsAnimate(-(elt.completeHeight), eltPrev)	
+				}
+			}
+		},
+		eltsMoveDown : function(elt, elts, flag) {
+			if(elt.n < elts.length-1){
+				var eltNext = elts[elt.n + 1];					
+				var eltNextBound = eltNext.pos.top + eltNext.completeHeight / 2;
+				if(elt.currentPos.top + elt.completeHeight > eltNextBound || flag){
+					if (eltNext.hasClass('locked') ){ return; } 
+					elt.insertAfter(eltNext);
+					eltNext.pos.top = elt.pos.top;
+					elt.pos.top += eltNext.completeHeight;																					
+					elts[elt.n] = eltNext;
+					elts[elt.n + 1] = elt;																
+					elts[elt.n].n = elt.n; 
+					elt.n = elt.n + 1; 
+					
+					this.eltsAnimate(elt.completeHeight, eltNext)					
+				}
+			}
+		},
+		eltsMoveBack : function(elt, elts) {
 			if(elt.n > 0){
 				var eltPrev = elts[elt.n - 1];			
-				var eltPrevBound = eltPrev.pos.left + parseInt(eltPrev.completeWidth / 2);				
-				if(thisElt.eltPos.left < eltPrevBound){	
+				var eltPrevBound = eltPrev.pos.left + eltPrev.completeWidth / 2;				
+				if(elt.currentPos.left < eltPrevBound){	
 									
 					if (eltPrev.hasClass('locked') ){ return; } 
 					elt.insertBefore(eltPrev);						
@@ -130,150 +184,87 @@
 					elts[elt.n].n = elt.n; 
 					elt.n = elt.n - 1;
 
-					eltPrev[0].style[transitionPrefix] = '0s';
-					eltPrev[0].style.left =  eltPrev.pos.left + 'px';	
-					eltPrev[0].style[transformPrefix] = 'translateX(' + -(elt.completeWidth) + 'px)'; 
-					eltPrev.transToZero();					
+					this.eltsAnimate(-(elt.completeWidth), eltPrev)		
 				}
-			}
-		} 
-		if(move == 'up'){																		//  move up	
-			if (trigger) {																		// trigger  for animating adjacent container				
-					onDragAdj.moveUp(elt, draggie, adjConElts);	
-			}   
-			else {			
-				if(elt.n > 0){
-					onDragElts.eltsMoveUp(elt, elts, thisElt)
-				}
-			}
-		}	
-		else if(move == 'down'){ 															//  move down	
-		    if (trigger) {																	// trigger  for animating adjacent container						
-					onDragAdj.moveDown(elt, draggie, adjConElts);			
-			}   
-			else {
-				if(elt.n < elts.length-1){
-					var eltNext = elts[elt.n + 1];					
-					var eltNextBound = eltNext.pos.top + parseInt(eltNext.completeHeight / 2);
-					if(thisElt.eltPos.top + elt.completeHeight > eltNextBound){
-						if (eltNext.hasClass('locked') ){ return; } 
-						elt.insertAfter(eltNext);
-						eltNext.pos.top = elt.pos.top;
-						elt.pos.top += eltNext.completeHeight;																					
-						elts[elt.n] = eltNext;
-						elts[elt.n + 1] = elt;																
-						elts[elt.n].n = elt.n; 
-						elt.n = elt.n + 1; 
-						
-						eltNext[0].style[transitionPrefix] = '0s';
-						eltNext[0].style.top = eltNext.pos.top + 'px';
-						eltNext[0].style[transformPrefix] = 'translateY(' + elt.completeHeight  + 'px)';
-						eltNext.transToZero();						
-					}
-				}
-			}
-		}
-		
-	};
-	
-	
-	var onDragElts = {
-		eltsMoveUp : function (elt, elts, thisElt) {
-			var eltPrev = elts[elt.n - 1];					 
-			var eltPrevBound = eltPrev.pos.top + parseInt(eltPrev.completeHeight / 2);
-			if(thisElt.eltPos.top < eltPrevBound){	
-				//if (eltPrev.hasClass('locked') ){ return; } 
-				elt.insertBefore(eltPrev);							
-				elt.pos.top = eltPrev.pos.top;
-				eltPrev.pos.top += elt.completeHeight;			
-				elts[elt.n] = eltPrev;
-				elts[elt.n - 1] = elt;																						
-				elts[elt.n].n = elt.n; 
-				elt.n = elt.n - 1; 
-
-				eltPrev[0].style[transitionPrefix] = '0s';
-				eltPrev[0].style.top =  eltPrev.pos.top + 'px';	
-				eltPrev[0].style[transformPrefix] = 'translateY(' + -(elt.completeHeight) + 'px)'; 
-				eltPrev.transToZero();
 			}
 		},
-		
-		
-		
+		eltsMoveForward : function(elt, elts) {
+			if(elt.n < elts.length-1){
+				var eltNext = elts[elt.n + 1];
+				var eltNextBound = eltNext.pos.left + eltNext.completeWidth / 2;
+				if(elt.currentPos.left + elt.completeWidth > eltNextBound){						
+					if (eltNext.hasClass('locked') ){ return; }  								// don't move beyond green colored items for difficulty setting 0
+					elt.insertAfter(eltNext);
+					eltNext.pos.left = elt.pos.left;
+					elt.pos.left += eltNext.completeWidth;										//invert datas in the correspondence array
+					elts[elt.n] = eltNext;
+					elts[elt.n + 1] = elt;														//update the n of the elements
+					elts[elt.n].n = elt.n; 
+					elt.n = elt.n + 1;
+
+					this.eltsAnimate(elt.completeWidth, eltNext)
+				}
+			}
+		},
+		eltsAnimate : function (eltDimension, elem) {
+				var dir = elem.o.isVertical ? 'top' : 'left';
+				var dirTranslate = elem.o.isVertical ? 'translateY(' : 'translateX(';
+				
+				elem[0].style[transitionPrefix] = '0s';
+				elem[0].style[dir] = elem.pos[dir] + 'px';
+				elem[0].style[transformPrefix] = dirTranslate + eltDimension  + 'px)';
+				elem.transToZero();
+		}
 	}
 	
 
 	
 	var onDragAdj = {
 		
-		triggerOn : function (elt, draggie, adjConElts, elts, o) {
-			trigger = true;
-			var tempArr = []
+		triggerOn : function (elt, adjConElts, elts, o) {
+			var tempArr = [];
+			
 			for(var i = 0; i < adjConElts.length; i++){ 							//Loop the array
-					var obj = adjConElts[i]
-					if (draggie.position.y  < obj.pos.top + obj.completeHeight/2) {
+				var obj = adjConElts[i]
+				if (elt.currentPos.top  < obj.pos.top + obj.completeHeight/2) {
+						
+					if (obj.moved == false) {
+						tempArr.push(i)
+						obj[0].style[transitionPrefix] = '250ms ease';
+						obj[0].style[transformPrefix] = 'translateY(' + elt.completeHeight + 'px)';						
+						obj.moved = true;
+						elt.insertPos = obj.n;
+						obj.pos.top = obj.pos.top + elt.completeHeight;
 							
-						if (obj.moved == false) {
-							tempArr.push(i)
-							obj[0].style[transitionPrefix] = '250ms ease';
-							obj[0].style[transformPrefix] = 'translateY(' + elt.completeHeight + 'px)';						
-							obj.moved = true;
-							elt.insertPos = obj.n;
-							obj.pos.top = obj.pos.top + elt.completeHeight;
-							
-						};
 					};
 				};
+			};
 			elt.insertPos = tempArr[0] >= 0 ? tempArr[0] : adjConElts.length;
-			
-																									// reorder the elements in the originating container 
-			 for (var i=elt.n + 1;i<elts.length;i++) {
-						var eltNext = elts[elt.n + 1];
-						eltNext.pos.top = elt.pos.top;
-						eltNext.pos.left = o.isVertical ? 0 : elt.pos.left;
-						elt.pos.top += eltNext.completeHeight;
-						elt.pos.left += o.isVertical ? 0 : eltNext.completeEidth;							
-						elts[elt.n] = eltNext;
-						elts[elt.n + 1] = elt;																
-						elts[elt.n].n = elt.n; 
-						elt.n = elt.n + 1; 
-						
-						eltNext[0].style[transitionPrefix] = '0s';
-						eltNext[0].style.top = eltNext.pos.top + 'px';
-						eltNext[0].style[transformPrefix] = 'translateY(' + elt.completeHeight  + 'px)';
-						eltNext.transToZero();
-			 
+																										// reorder the elements in the originating container 
+			for (var i=elt.n + 1;i<elts.length;i++) {
+				onDragElts.eltsMoveDown(elt, elts, true)							// third argument is a flag to override pos check in eltsMoveDown function 
 			}; 
-			elt.insertAfter(eltNext);
-		
-			
 		},
-		triggerOff : function (elt, draggie, adjConElts, elts, thisElt, onDragElts) {									// going back to the originating container
-			trigger = false;
-		
-			
-			 for(var ind = 0; ind < adjConElts.length; ind++){ 						//Loop the array starting from the first element to be moved down
-				var objectNumber = adjConElts[ind];
+		triggerOff : function (elt, adjConElts, elts) {									// going back to the originating container
+							
+			for(var i = 0; i < adjConElts.length; i++){ 						//Loop over adjacentContainer elements
+				var obj = adjConElts[i];
 				
-				if (objectNumber.moved == true) {
-					objectNumber.transToZero();
-						objectNumber.moved = false;
-						objectNumber.pos.top = objectNumber.pos.top - elt.completeHeight;
+				if (obj.moved == true) {
+					obj.moved = false;
+					obj.pos.top = obj.pos.top - elt.completeHeight;
+					obj.transToZero();
 				}
+			}		
+			for (var i=0;i<elts.length-1;i++) {									// Loop over originating Container elements 	
+				onDragElts.eltsMoveUp(elt, elts)	
 			}
-			 for (var i=0;i<elts.length-1;i++) {
-					var obj = elts[i]
-						
-					//if (draggie.position.y  < obj.pos.top + obj.completeHeight/2) {								
-								onDragElts.eltsMoveUp(elt, elts, thisElt)
-					//}	
-			 }
 			
 		},
-		moveUp : function (elt, draggie, adjConElts) {
+		moveUp : function (elt, adjConElts) {
 			if (elt.insertPos > 0) {				
 				var obj = adjConElts[elt.insertPos -1]
-				if (draggie.position.y  < obj.pos.top + obj.completeHeight/2 && obj.moved == false) {					
+				if (elt.currentPos.top  < obj.pos.top + obj.completeHeight/2 && obj.moved == false) {					
 					obj[0].style[transitionPrefix] = '250ms ease';
 					obj[0].style[transformPrefix] = 'translateY(' + elt.completeHeight + 'px)';	
 					obj.moved = true;
@@ -282,10 +273,10 @@
 				};
 			};				
 		},
-		moveDown : function (elt, draggie, adjConElts) {
+		moveDown : function (elt, adjConElts) {
 			if (elt.insertPos < adjConElts.length) {
 				var obj = adjConElts[elt.insertPos]
-				if (draggie.position.y  + elt.completeHeight > obj.pos.top + obj.completeHeight/2 && obj.moved == true) {
+				if (elt.currentPos.top  + elt.completeHeight > obj.pos.top + obj.completeHeight/2 && obj.moved == true) {
 					obj.transToZero();
 					obj.moved = false;
 					elt.insertPos = obj.n +1;
@@ -297,16 +288,9 @@
 	};
 
 	
-	function onStop(evt, draggie, elt, div, o)	{									// Stop
-		
-		/* if (trigger) {
-			for (var i=elt.n + 1;i<instanceArr[elt.belongsTo].elts.length;i++) { 
-				instanceArr[elt.belongsTo].elts[i][0].style[transitionPrefix] = '250ms'
-				instanceArr[elt.belongsTo].elts[i][0].style[transformPrefix] = 'translate(' + -(elt.completeWidth)  + 'px,' +  -(elt.completeHeight)  + 'px)';
-				};
-		} */
-	
-		animateBack(elt, draggie);
+	function onStop(evt, elt, div, o)	{									// Stop
+			
+		animateBack(elt);
 		
 		elt[0].style[transitionPrefix] = 'box-shadow 250ms';
 		elt.removeClass('boxShadow');	
@@ -322,17 +306,16 @@
 			if (!!o.autoValidate) {
 				o.autoValidate();	 						// calls the autovalidate function in the plugin calling script						
 			}
-			if (trigger) {
-				
-				
+			if (crossTrigger) {
+	
 				instanceArr[elt.belongsTo].removeLiElem(elt, false) 
 				instanceArr[elt.movesTo].addLiElem(elt.text(), elt.insertPos);
-				trigger = false;
+				crossTrigger = false;
 				
-			    var instMovesTo = instanceArr[elt.movesTo].elts;								  					// append to previous
+			   /*  var instMovesTo = instanceArr[elt.movesTo].elts;								  					// append to previous
 				
 				instanceArr[elt.belongsTo].addLiElem( instMovesTo[instMovesTo.length -1].text(), 0 , true)		// add true to animate 
-				instanceArr[elt.movesTo].removeLiElem( instMovesTo[instMovesTo.length -1] , true)  					// append to previous end     
+				instanceArr[elt.movesTo].removeLiElem( instMovesTo[instMovesTo.length -1] , true)  					// append to previous end      */
 				
 				
 			}  
@@ -342,16 +325,16 @@
 		
 	};
 	
-	function animateBack (elt, draggie) {				
-		if (trigger) {
+	function animateBack (elt) {				
+		if (crossTrigger) {
 			var adjacentDir = instanceArr[elt.movesTo].divOffset.left -  instanceArr[elt.belongsTo].divOffset.left;
 			
 			var animateToPos = elt.insertPos == instanceArr[elt.movesTo].elts.length && elt.insertPos > 0? instanceArr[elt.movesTo].elts[elt.insertPos -1].pos.top + instanceArr[elt.movesTo].elts[elt.insertPos -1].completeHeight:elt.insertPos == 0 ? 0 :instanceArr[elt.movesTo].elts[elt.insertPos].pos.top - elt.completeHeight;
 			
-			var thisLeft = adjacentDir, thisTop = animateToPos, thisX = draggie.position.x - adjacentDir, thisY = draggie.position.y - animateToPos;	
+			var thisLeft = adjacentDir, thisTop = animateToPos, thisX = elt.currentPos.left - adjacentDir, thisY = elt.currentPos.top - animateToPos;	
 		}
 		else {	
-			var thisLeft = elt.pos.left, thisTop = elt.pos.top, thisX = draggie.position.x - elt.pos.left, thisY = draggie.position.y - elt.pos.top;
+			var thisLeft = elt.pos.left, thisTop = elt.pos.top, thisX = elt.currentPos.left - elt.pos.left, thisY = elt.currentPos.top - elt.pos.top;
 		}
 		
 		elt[0].style.left = thisLeft + 'px'
@@ -555,9 +538,8 @@
 		var movePos = {};
 		var elt;
 		var moveIsDragged = false;
-		var draggie = {};
-		draggie.position = {};
-		var ui = {};
+		
+	
 		var liSelector = o.isVertical == true ? '.listItem' : '.listItem-horizontal'
 	
 	
@@ -606,10 +588,12 @@
 				// we need to save last made offset
 				movePos = {dx: newDx, dy: newDy };
 							
-				draggie.position.y = targetOffsetY + newDy
-				draggie.position.x = targetOffsetX + newDx
+			
+				
+				elt.currentPos.top = targetOffsetY + newDy;
+				elt.currentPos.left = targetOffsetX + newDx;
 
-				onDrag(ui, draggie, elt, thisElts, o); 				
+				onDrag(elt, thisElts, o); 				
 		
 			});
 			
@@ -626,11 +610,10 @@
 				move[0].style.left = targetOffsetX + movePos.dx + 'px'
 				
 
-				draggie.position.y = targetOffsetY + movePos.dy
-				draggie.position.x = targetOffsetX + movePos.dx
+
 				moveIsDragged = false
 				
-				onStop(e, draggie, elt, div, o)
+				onStop(e, elt, div, o)
 			});
 		});
 			
