@@ -22,11 +22,12 @@ $(document).ready(function() {
 
 				$(".jMyPuzzle").css('opacity',1).jumbleScramble({
 						isVertical: isVertical,
+						cutOff: 600,
 						layoutComplete: function (instanceArray) {	
 								console.log(instanceArray)
 							//	 $(".jMyPuzzle").eq(0).jumbleScramble('add', 'Lorem ipsum dolor.', 6) 
-							//$(".jMyPuzzle").eq(1).jumbleScramble('add', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam et mi sapien.', 3, true)  
-							$(".jMyPuzzle").eq(0).find('li').first().jumbleScramble('remove', '' ,false)  // add true or false to animate remove
+							/* $(".jMyPuzzle").eq(1).jumbleScramble('add', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam et mi sapien.', 3, true)  
+							$(".jMyPuzzle").eq(0).find('li').first().jumbleScramble('remove', '' ,true)  // add true or false to animate remove */
 						}						
 					});	
 			}

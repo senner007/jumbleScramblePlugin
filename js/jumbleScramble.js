@@ -133,11 +133,11 @@
 	
 	
 	var onDragElts = {
-		eltsMoveUp : function (elt, elts) {
+		eltsMoveUp : function (elt, elts, flag) {				// flag disregards elt position check 
 			if(elt.n > 0){
 				var eltPrev = elts[elt.n - 1];					 
 				var eltPrevBound = eltPrev.pos.top + eltPrev.completeHeight / 2;
-				if(elt.currentPos.top < eltPrevBound){	
+				if(elt.currentPos.top < eltPrevBound || flag){	
 					if (eltPrev.hasClass('locked') ){ return; } 
 					elt.insertBefore(eltPrev);							
 					elt.pos.top = eltPrev.pos.top;
@@ -151,7 +151,7 @@
 				}
 			}
 		},
-		eltsMoveDown : function(elt, elts, flag) {
+		eltsMoveDown : function(elt, elts, flag) {				
 			if(elt.n < elts.length-1){
 				var eltNext = elts[elt.n + 1];					
 				var eltNextBound = eltNext.pos.top + eltNext.completeHeight / 2;
@@ -312,6 +312,8 @@
 				instanceArr[elt.movesTo].addLiElem(elt.text(), elt.insertPos);
 				crossTrigger = false;
 				
+				instanceArr[elt.movesTo].cutOff()
+				
 			   /*  var instMovesTo = instanceArr[elt.movesTo].elts;								  					// append to previous
 				
 				instanceArr[elt.belongsTo].addLiElem( instMovesTo[instMovesTo.length -1].text(), 0 , true)		// add true to animate 
@@ -366,6 +368,23 @@
 		conCount++;
 		
 	};	
+	JumbleScramble.prototype.cutOff = function () {
+		var oCutOff = this.options.cutOff;
+		
+		var eltsHeight = 0;
+		for (var i=0;i<this.elts.length;i++) {
+				eltsHeight += this.elts[i].completeHeight;
+			
+		}
+		while (eltsHeight > oCutOff) {
+			 
+			instanceArr[this.adjCon].addLiElem( this.elts[this.elts.length -1].text(), 0 , true)
+			this.removeLiElem( this.elts[this.elts.length -1] , true)
+			eltsHeight -=  this.elts[this.elts.length -1].completeHeight;
+			
+		}
+	
+	};
 
 	JumbleScramble.prototype.removeLiElem = function () {							// Remove new li to previous collection
 		
@@ -430,12 +449,9 @@
 			var tempArr = [];
 			
 			
-			for (var i=n;i<thisElts.length;i++) { 
-					
-				
+			for (var i=n;i<thisElts.length;i++) { 	
 				tempArr.push(thisElts[i]);				
 			}
-	
 			
 			var eltObj = {
 				'left': n > 0 ? thisElts[n -1].pos.left + thisElts[n -1].completeWidth + 'px' : 0, 
