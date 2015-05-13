@@ -564,6 +564,7 @@
 			move = $(this);
 			
 			move[0].style[transitionPrefix] = '0s';
+			move[0].style.zIndex = 5;
 			move.addClass('dragging');
 
 			instanceArr[adjCon].div[0].style.zIndex = '-1'
@@ -609,6 +610,7 @@
 			$document.on("mouseup touchend",function(e){
 			
 				move[0].style[transitionPrefix] = 'box-shadow 250ms';
+				move[0].style.zIndex = 1;
 				move.removeClass('dragging');
 				$document.off("mousemove touchmove mouseup touchend");
 				if (moveIsDragged == false) { 	return;   }
@@ -630,7 +632,7 @@
 	var instanceArr = [];	
 	
 	$.fn.jumbleScramble = function(options, arg1, arg2, arg3) { 							// jumbleScramble fn
-			
+			console.time(name)
 		if (typeof options === 'string') {											// if a metod is called
 			
 			var self = this
@@ -651,7 +653,7 @@
 				instanceArr.push(new JumbleScramble(this, options, arg1, arg2)) 	
 			}).promise().done(function (){
 				if (!!options.layoutComplete )options.layoutComplete(instanceArr);
-		
+					console.timeEnd(name)
 			});			
 		}
 	
