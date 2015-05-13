@@ -85,6 +85,7 @@
 			var adjacentDir = instanceArr[elt.movesTo].divOffset.left -  instanceArr[elt.belongsTo].divOffset.left;	
 			var dirSwitch = (elt.belongsTo % 2 == 0 ? thisElt.eltPos.left > adjacentDir/2 : thisElt.eltPos.left < adjacentDir/2);  				
 		}
+	
 		
 		/*--------------------------------------------------------------------*/	
 		if (dirSwitch && crossTrigger == false) { 																			// trigger animations for adjacent container
@@ -312,14 +313,9 @@
 				instanceArr[elt.movesTo].addLiElem(elt.text(), elt.insertPos);
 				crossTrigger = false;
 				
-				instanceArr[elt.movesTo].cutOffMethod()
+				instanceArr[elt.movesTo].cutOffEnd()
 				
-			   /*  var instMovesTo = instanceArr[elt.movesTo].elts;								  					// append to previous
-				
-				instanceArr[elt.belongsTo].addLiElem( instMovesTo[instMovesTo.length -1].text(), 0 , true)		// add true to animate 
-				instanceArr[elt.movesTo].removeLiElem( instMovesTo[instMovesTo.length -1] , true)  					// append to previous end      */
-				
-				
+					
 			}  
 		}; 
 			
@@ -370,7 +366,7 @@
 		conCount++;
 		
 	};	
-	JumbleScramble.prototype.cutOffMethod = function () {
+	JumbleScramble.prototype.cutOffEnd = function () {
 		var oCutOff = this.cutOff;
 		
 		var eltsHeight = 0;
