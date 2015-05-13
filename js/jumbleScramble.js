@@ -1,6 +1,6 @@
 (function ( $ ) {                 			    // Compliant with jquery.noConflict()
 	
-	var transSupport = function()  {
+	var transSupport = (function()  {
 		var b = document.body || document.documentElement,
 			s = b.style,
 			p = 'transition';
@@ -12,12 +12,14 @@
 			if (typeof s[v[i] + p] == 'string') { return true; }
 		}
 		return false;
-	}
+	})();
+
 	
-	var ifGpu = transSupport() ? 'translate3d(0px,0px,0px) translateZ(0)' : 'translate(0px,0px)';
+	
+	var ifGpu = transSupport ? 'translate3d(0px,0px,0px) translateZ(0)' : 'translate(0px,0px)';
 	var testElement = document.createElement('div');
     var transitionPrefix = "webkitTransition" in testElement.style ? "webkitTransition" : "transition";
-    var transformPrefix = "webkitTransform" in testElement.style ? "webkitTransform" : "-ms-transform" in testElement.style && transSupport() == false ? "-ms-transform" : "transform";  //if ie9
+    var transformPrefix = "webkitTransform" in testElement.style ? "webkitTransform" : "-ms-transform" in testElement.style && transSupport == false ? "-ms-transform" : "transform";  //if ie9
 
 	$.fn.transToZero = function () {
 		var elt = this[0];
@@ -293,14 +295,14 @@
 			
 		animateBack(elt);
 		
-		elt[0].style[transitionPrefix] = 'box-shadow 250ms';
-		elt.removeClass('boxShadow');	
+		
+
 		elt.transToZero();	
 		
 		if (o.setChars)	{setChars(elt);	}	// setChars function	- re-align lis after uppercase/lowercase for difficulty setting  2	
 															
 		
-		transSupport() ? elt.one('transitionend', function () { appendRemove() }) : appendRemove() // only wait for transitionend if supported (not ie9)
+		transSupport ? elt.one('transitionend', function () { appendRemove() }) : appendRemove() // only wait for transitionend if supported (not ie9)
 
 		function appendRemove () {
 			
@@ -544,7 +546,6 @@
 		var targetOffsetX;
 		var $document = $(document);
 		var div = this.div;
-		var thisContainer = this.container
 		var adjCon = this.adjCon;
 		var o = this.options;
 		var thisElts = this.elts	
@@ -562,16 +563,12 @@
 	
 			move = $(this);
 			
+			move[0].style[transitionPrefix] = '0s';
+			move.addClass('dragging');
 
-		/* 	move[0].style[transitionPrefix] = '0.2s'; */
-			move[0].style.zIndex = '5';
 			instanceArr[adjCon].div[0].style.zIndex = '-1'
 			div[0].style.zIndex = '1'
-			
-			move[0].style[transitionPrefix] = '0s';
-			move.addClass('boxShadow').addClass('dragging');
-		/* 	move[0].style[transformPrefix] = 'scale(0.95,1)';	 */
-				 
+ 
 			if (me.type == 'touchstart') { me = me.originalEvent.touches[0] }
 				var startX = me.pageX, startY = me.pageY;
 			
@@ -589,10 +586,8 @@
 				var newDx = e.pageX - startX,
 					newDy = e.pageY - startY;
 			
-				if (transSupport()) {
-						
-					move[0].style[transformPrefix] = 'translate3d(' + newDx + 'px, ' + newDy + 'px, 0px) translateZ(0)';	
-						
+				if (transSupport) {					
+					move[0].style[transformPrefix] = 'translate3d(' + newDx + 'px, ' + newDy + 'px, 0px) translateZ(0)';				
 				}
 				else {
 					move[0].style.top = targetOffsetY + movePos.dy + 'px'
@@ -612,21 +607,19 @@
 			});
 			
 			$document.on("mouseup touchend",function(e){
-				move[0].style.zIndex = '1';
-				move.removeClass('boxShadow').removeClass('dragging');
+			
+				move[0].style[transitionPrefix] = 'box-shadow 250ms';
+				move.removeClass('dragging');
 				$document.off("mousemove touchmove mouseup touchend");
 				if (moveIsDragged == false) { 	return;   }
-		
-				if (transSupport()) {
+				moveIsDragged = false;				
+				if (transSupport) {
 					move[0].style[transformPrefix] = 'translateZ(0) translate3d(' + 0 + 'px, ' + 0 + 'px, 0px)';		
 				}
 				move[0].style.top = targetOffsetY + movePos.dy + 'px'
 				move[0].style.left = targetOffsetX + movePos.dx + 'px'
 				
-
-
-				moveIsDragged = false
-				
+	
 				onStop(e, elt, div, o)
 			});
 		});
