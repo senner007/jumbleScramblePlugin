@@ -23,7 +23,7 @@
 
 	$.fn.transToZero = function () {
 		var elt = this[0];
-
+	
 		window.getComputedStyle(elt)[transformPrefix]	// needed to apply the transition style dynamically 
 	
 		elt.style[transitionPrefix] = '250ms ease';	
@@ -299,6 +299,7 @@
 		animateBack(elt);
 		
 		
+		
 
 		elt.transToZero();	
 		
@@ -367,6 +368,8 @@
 		this.options = $.extend( {}, defaults, options) ;
 		this.init();
 		this.cutOff = this.options.cutOff[conCount];
+		this.ul[0].style[transformPrefix] = 'translate3d(' + 0 + 'px, ' + 0 + 'px, 0px)';		
+		
 		
 		conCount++;
 		
@@ -535,7 +538,8 @@
 			
 			addToObject(thisElts, elt, n, $thisHeight, $thisWidth, o, thisContainer, adjCon);			
 						
-			n = n+1;					
+			n = n+1;
+			elt[0].style[transformPrefix] = 'translate3d(' + 0 + 'px, ' + 0 + 'px, 0px)';			
 		}
 		this.addHandlers();
 		
@@ -547,7 +551,7 @@
 	
 		var targetOffsetY; 
 		var targetOffsetX;
-		var $document = $(document);
+		var $document = $('body');
 		var div = this.div;
 		var adjCon = this.adjCon;
 		var o = this.options;
@@ -565,13 +569,15 @@
 		div.on("mousedown touchstart",liSelector,function(me){
 	
 			move = $(this);
-			
+	
 			move[0].style[transitionPrefix] = '0s';
+			
+
 			move[0].style.zIndex = 5;
 			move.addClass('dragging');
 
-			instanceArr[adjCon].div[0].style.zIndex = '-1'
-			div[0].style.zIndex = '1'
+			//  instanceArr[adjCon].div[0].style.zIndex = '1'
+			div[0].style.zIndex = '2'  					// this causes a lag on drag in chrome ios
  
 			if (me.type == 'touchstart') { me = me.originalEvent.touches[0] }
 				var startX = me.pageX, startY = me.pageY;
@@ -614,6 +620,8 @@
 			
 				move[0].style[transitionPrefix] = 'box-shadow 250ms';
 				move[0].style.zIndex = 1;
+				instanceArr[adjCon].div[0].style.zIndex = '1'
+				div[0].style.zIndex = '1'
 				move.removeClass('dragging');
 				$document.off("mousemove touchmove mouseup touchend");
 				if (moveIsDragged == false) { 	return;   }
