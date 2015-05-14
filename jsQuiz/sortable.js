@@ -14,7 +14,7 @@ $(document).ready(function() {
 
 		$('body').disableSelection();	
 		
-			var isVertical = false;
+			var isVertical = true;
 			
 			if (isVertical == true) {
 				

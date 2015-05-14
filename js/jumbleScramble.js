@@ -211,11 +211,11 @@
 		},
 		eltsAnimate : function (eltDimension, elem) {
 				var dir = elem.o.isVertical ? 'top' : 'left';
-				var dirTranslate = elem.o.isVertical ? 'translateY(' : 'translateX(';
+				//var dirTranslate = elem.o.isVertical ? 'translateY(' : 'translateX(';
 				
 				elem[0].style[transitionPrefix] = '0s';
 				elem[0].style[dir] = elem.pos[dir] + 'px';
-				elem[0].style[transformPrefix] = dirTranslate + eltDimension  + 'px)';
+				elem[0].style[transformPrefix] = elem.o.isVertical ? 'translate3d(0px,' + eltDimension  + 'px, 0px)': 'translate3d(' + eltDimension  + 'px, 0px, 0px)'
 				elem.transToZero();
 		}
 	}
@@ -234,7 +234,7 @@
 					if (obj.moved == false) {
 						tempArr.push(i)
 						obj[0].style[transitionPrefix] = '250ms ease';
-						obj[0].style[transformPrefix] = 'translateY(' + elt.completeHeight + 'px)';						
+						obj[0].style[transformPrefix] = transSupport ? 'translate3d(0px,' + elt.completeHeight + 'px,0px)' : 'translateY(' + elt.completeHeight + 'px)';						
 						obj.moved = true;
 						elt.insertPos = obj.n;
 						obj.pos.top = obj.pos.top + elt.completeHeight;
@@ -243,10 +243,11 @@
 				};
 			};
 			elt.insertPos = tempArr[0] >= 0 ? tempArr[0] : adjConElts.length;
-																										// reorder the elements in the originating container 
+																								// reorder the elements in the originating container 
 			for (var i=elt.n + 1;i<elts.length;i++) {
-				onDragElts.eltsMoveDown(elt, elts, true)							// third argument is a flag to override pos check in eltsMoveDown function 
-			}; 
+				onDragElts.eltsMoveDown(elt, elts, true);							// third argument is a flag to override pos check in eltsMoveDown function 
+			};
+		
 		},
 		triggerOff : function (elt, adjConElts, elts) {									// going back to the originating container
 							
@@ -258,10 +259,12 @@
 					obj.pos.top = obj.pos.top - elt.completeHeight;
 					obj.transToZero();
 				}
-			}		
-			for (var i=0;i<elts.length-1;i++) {									// Loop over originating Container elements 	
-				onDragElts.eltsMoveUp(elt, elts)	
 			}
+		
+				for (var i=0;i<elts.length-1;i++) {									// Loop over originating Container elements 	
+					onDragElts.eltsMoveUp(elt, elts);	
+				}
+		
 			
 		},
 		moveUp : function (elt, adjConElts) {
@@ -632,7 +635,7 @@
 	var instanceArr = [];	
 	
 	$.fn.jumbleScramble = function(options, arg1, arg2, arg3) { 							// jumbleScramble fn
-			console.time(name)
+			
 		if (typeof options === 'string') {											// if a metod is called
 			
 			var self = this
@@ -653,7 +656,7 @@
 				instanceArr.push(new JumbleScramble(this, options, arg1, arg2)) 	
 			}).promise().done(function (){
 				if (!!options.layoutComplete )options.layoutComplete(instanceArr);
-					console.timeEnd(name)
+					
 			});			
 		}
 	
