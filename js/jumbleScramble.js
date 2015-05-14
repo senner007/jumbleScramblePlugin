@@ -87,15 +87,23 @@
 			var adjacentDir = instanceArr[elt.movesTo].divOffset.left -  instanceArr[elt.belongsTo].divOffset.left;	
 			var dirSwitch = (elt.belongsTo % 2 == 0 ? thisElt.eltPos.left > adjacentDir/2 : thisElt.eltPos.left < adjacentDir/2);  				
 		}
-	
+		if (instanceArr.length > 1 && !o.isVertical) {			
+			var adjConElts = instanceArr[elt.movesTo].elts;
+			var adjacentDir = instanceArr[elt.movesTo].divOffset.top -  instanceArr[elt.belongsTo].divOffset.top;	
+			var dirSwitch = (elt.belongsTo % 2 == 0 ? thisElt.eltPos.top > adjacentDir/2 : thisElt.eltPos.top < adjacentDir/2);  				
+		}
+		
+		
 		
 		/*--------------------------------------------------------------------*/	
-		if (dirSwitch && crossTrigger == false) { 																			// trigger animations for adjacent container
+		if (dirSwitch && crossTrigger == false /* && adjConElts[adjConElts.length -1].pos.top + adjConElts[adjConElts.length -1].completeHeight <= instanceArr[elt.movesTo].dropLimit */) {   // trigger animations for 
+																																														// adjacent container if below 
+																																														// dropLimit
 			onDragAdj.triggerOn(elt, adjConElts, elts, o); 
 			crossTrigger = true;
 		}; 							
 		if (!dirSwitch && crossTrigger == true && Object.keys(elts).length > 1) { 											// go back to originating container
-			onDragAdj.triggerOff(elt, adjConElts, elts);
+			onDragAdj.triggerOff(elt, adjConElts, elts, o);
 			crossTrigger = false;			
 		};		
 		
@@ -110,10 +118,23 @@
 
 		/*--------------------------------------------------------------------*/	
 		if (move == 'forward'){																    //  move forward
-			onDragElts.eltsMoveForward(elt, elts)	
+			if (crossTrigger) {																					
+				onDragAdj.moveForward(elt, adjConElts);	
+			} 
+			else {
+				onDragElts.eltsMoveForward(elt, elts)
+			}
+				
 		}
-		if (move == "backward"){																//  move backward	
-			onDragElts.eltsMoveBack(elt, elts)	
+		if (move == "backward"){																//  move backward
+			if (crossTrigger) {																					
+				onDragAdj.moveBack(elt, adjConElts);	
+			}
+			else {
+				onDragElts.eltsMoveBack(elt, elts)
+				onDragElts.eltsMoveBack(elt, elts)
+				onDragElts.eltsMoveBack(elt, elts)
+			}
 		} 
 		if (move == 'up'){																		//  move up	
 			if (crossTrigger) {																					
@@ -191,11 +212,11 @@
 				}
 			}
 		},
-		eltsMoveForward : function(elt, elts) {
+		eltsMoveForward : function(elt, elts, flag) {
 			if(elt.n < elts.length-1){
 				var eltNext = elts[elt.n + 1];
 				var eltNextBound = eltNext.pos.left + eltNext.completeWidth / 2;
-				if(elt.currentPos.left + elt.completeWidth > eltNextBound){						
+				if(elt.currentPos.left + elt.completeWidth > eltNextBound || flag){						
 					if (eltNext.hasClass('locked') ){ return; }  								// don't move beyond green colored items for difficulty setting 0
 					elt.insertAfter(eltNext);
 					eltNext.pos.left = elt.pos.left;
@@ -226,43 +247,48 @@
 		
 		triggerOn : function (elt, adjConElts, elts, o) {
 			var tempArr = [];
-			
+			var objOffset = o.isVertical ? 'top' : 'left';
+			var objDimension = o.isVertical ? 'completeHeight' : 'completeWidth';
+			var objTranslate = o.isVertical ? 'translate3d(0px,' + elt[objDimension] + 'px,0px)' : 'translate3d(' + elt[objDimension] + 'px,0px,0px)'
 			for(var i = 0; i < adjConElts.length; i++){ 							//Loop the array
 				var obj = adjConElts[i]
-				if (elt.currentPos.top  < obj.pos.top + obj.completeHeight/2) {
+				
+				if (elt.currentPos[objOffset]  < obj.pos[objOffset] + obj[objDimension]/2) {
 						
 					if (obj.moved == false) {
 						tempArr.push(i)
 						obj[0].style[transitionPrefix] = '250ms ease';
-						obj[0].style[transformPrefix] = transSupport ? 'translate3d(0px,' + elt.completeHeight + 'px,0px)' : 'translateY(' + elt.completeHeight + 'px)';						
+						obj[0].style[transformPrefix] = objTranslate						
 						obj.moved = true;
 						elt.insertPos = obj.n;
-						obj.pos.top = obj.pos.top + elt.completeHeight;
+						obj.pos[objOffset] = obj.pos[objOffset] + elt[objDimension];
 							
 					};
 				};
 			};
 			elt.insertPos = tempArr[0] >= 0 ? tempArr[0] : adjConElts.length;
 																								// reorder the elements in the originating container 
-			for (var i=elt.n + 1;i<elts.length;i++) {
-				onDragElts.eltsMoveDown(elt, elts, true);							// third argument is a flag to override pos check in eltsMoveDown function 
+			 for (var i=elt.n + 1;i<elts.length;i++) {
+				o.isVertical ? onDragElts.eltsMoveDown(elt, elts, true) : onDragElts.eltsMoveForward(elt, elts, true);							// third argument is a flag to override pos check in eltsMoveDown function 
 			};
 		
 		},
-		triggerOff : function (elt, adjConElts, elts) {									// going back to the originating container
-							
+		triggerOff : function (elt, adjConElts, elts, o) {									// going back to the originating container
+			console.log('hello back')
+			var objOffset = o.isVertical ? 'top' : 'left';
+			var objDimension = o.isVertical ? 'completeHeight' : 'completeWidth';	
 			for(var i = 0; i < adjConElts.length; i++){ 						//Loop over adjacentContainer elements
 				var obj = adjConElts[i];
 				
 				if (obj.moved == true) {
 					obj.moved = false;
-					obj.pos.top = obj.pos.top - elt.completeHeight;
+					obj.pos[objOffset] = obj.pos[objOffset] - elt[objDimension];
 					obj.transToZero();
 				}
 			}
 		
 				for (var i=0;i<elts.length-1;i++) {									// Loop over originating Container elements 	
-					onDragElts.eltsMoveUp(elt, elts);	
+					o.isVertical ? onDragElts.eltsMoveUp(elt, elts) : onDragElts.eltsMoveBack(elt, elts);	
 				}
 		
 			
@@ -289,6 +315,32 @@
 					obj.pos.top = obj.pos.top - elt.completeHeight;		
 				}
 			};			
+		},
+		moveForward : function (elt, adjConElts) {
+			if (elt.insertPos < adjConElts.length) {
+				var obj = adjConElts[elt.insertPos]
+				if (elt.currentPos.left  + elt.completeWidth > obj.pos.left + obj.completeWidth/2 && obj.moved == true) {
+					obj.transToZero();
+					obj.moved = false;
+					elt.insertPos = obj.n +1;
+					obj.pos.left = obj.pos.left - elt.completeWidth;		
+				}
+			};			
+		},
+		moveBack : function (elt, adjConElts) {
+			
+			if (elt.insertPos > 0) {
+				var obj = adjConElts[elt.insertPos -1]
+				
+				if (elt.currentPos.left  < obj.pos.left + obj.completeWidth/2 && obj.moved == false) {
+				
+					obj[0].style[transitionPrefix] = '250ms ease';
+					obj[0].style[transformPrefix] = 'translate3d(' + elt.completeWidth + 'px,0px,0px)';	
+					obj.moved = true;
+					elt.insertPos = obj.n;
+					obj.pos.left = obj.pos.left + elt.completeWidth;		
+				}
+			};			
 		}
 		
 	};
@@ -296,15 +348,11 @@
 	
 	function onStop(evt, elt, div, o)	{									// Stop
 			
-		animateBack(elt);
+		animateBack(elt, o);
 		
-		
-		
-
 		elt.transToZero();	
 		
-		if (o.setChars)	{setChars(elt);	}	// setChars function	- re-align lis after uppercase/lowercase for difficulty setting  2	
-															
+		if (o.setChars)	{setChars(elt);	}	// setChars function	- re-align lis after uppercase/lowercase for difficulty setting  2																
 		
 		transSupport ? elt.one('transitionend', function () { appendRemove() }) : appendRemove() // only wait for transitionend if supported (not ie9)
 
@@ -316,7 +364,7 @@
 			if (crossTrigger) {
 	
 				instanceArr[elt.belongsTo].removeLiElem(elt, false) 
-				instanceArr[elt.movesTo].addLiElem(elt.text(), elt.insertPos);
+				instanceArr[elt.movesTo].addLiElem(elt.text(), elt.insertPos, false);
 				crossTrigger = false;
 				
 				instanceArr[elt.movesTo].cutOffEnd()
@@ -329,13 +377,33 @@
 		
 	};
 	
-	function animateBack (elt) {				
-		if (crossTrigger) {
-			var adjacentDir = instanceArr[elt.movesTo].divOffset.left -  instanceArr[elt.belongsTo].divOffset.left;
+	function animateBack (elt, o) {				
+		
+		if (crossTrigger) {			
+			var instMovesTo = instanceArr[elt.movesTo];
+			var adjEltBefore = instMovesTo.elts[elt.insertPos -1];	
+			if (o.isVertical) {
+				
+				var adjacentDir = instMovesTo.divOffset.left - instanceArr[elt.belongsTo].divOffset.left;
+				
+				var animateToPos = elt.insertPos > 0 ? adjEltBefore.pos.top + adjEltBefore.completeHeight: 0;
+				
+				var thisLeft = adjacentDir, 
+					thisTop = animateToPos, 
+					thisX = elt.currentPos.left - adjacentDir, 
+					thisY = elt.currentPos.top - animateToPos;
+			}
+			else {
+				
+				var animateToPos = elt.insertPos > 0 ? adjEltBefore.pos.left + adjEltBefore.completeWidth : 0;
+				
+				var adjacentDir = instMovesTo.divOffset.top - instanceArr[elt.belongsTo].divOffset.top;
 			
-			var animateToPos = elt.insertPos == instanceArr[elt.movesTo].elts.length && elt.insertPos > 0? instanceArr[elt.movesTo].elts[elt.insertPos -1].pos.top + instanceArr[elt.movesTo].elts[elt.insertPos -1].completeHeight:elt.insertPos == 0 ? 0 :instanceArr[elt.movesTo].elts[elt.insertPos].pos.top - elt.completeHeight;
-			
-			var thisLeft = adjacentDir, thisTop = animateToPos, thisX = elt.currentPos.left - adjacentDir, thisY = elt.currentPos.top - animateToPos;	
+				var thisLeft = animateToPos,
+					thisTop =  adjacentDir,
+					thisX =  elt.currentPos.left - animateToPos,
+					thisY = elt.currentPos.top - adjacentDir;	
+			}		
 		}
 		else {	
 			var thisLeft = elt.pos.left, thisTop = elt.pos.top, thisX = elt.currentPos.left - elt.pos.left, thisY = elt.currentPos.top - elt.pos.top;
@@ -343,7 +411,7 @@
 		
 		elt[0].style.left = thisLeft + 'px'
 		elt[0].style.top = thisTop + 'px'
-		elt[0].style[transformPrefix] = 'translate(' + thisX  + 'px,' +  thisY + 'px)';
+		elt[0].style[transformPrefix] = 'translate3d(' + thisX  + 'px,' +  thisY + 'px,0px)';
 	}
 	
 	function getOffset(elt){												
@@ -354,6 +422,7 @@
 		isVertical: false,
 		setChars: false,
 		cutOff: false,
+		dropLimit: false,
 		layoutComplete: function () {}
 		}
 	
@@ -368,6 +437,7 @@
 		this.options = $.extend( {}, defaults, options) ;
 		this.init();
 		this.cutOff = this.options.cutOff[conCount];
+		this.dropLimit = this.options.dropLimit[conCount];
 		this.ul[0].style[transformPrefix] = 'translate3d(' + 0 + 'px, ' + 0 + 'px, 0px)';		
 		
 		
@@ -412,7 +482,7 @@
 					thisElts[i].n = i-1;
 					thisElts[i][0].style.top  = parseInt(thisElts[i][0].style.top) - eltHeight + 'px'
 					thisElts[i][0].style.left  = parseInt(thisElts[i][0].style.left) - eltWidth + 'px'
-					thisElts[i][0].style[transformPrefix] =  'translate(0px,0px)';
+					thisElts[i][0].style[transformPrefix] =  'translate(0px,0px,0px)';
 					thisElts[i].pos.top = thisElts[i].pos.top  - eltHeight
 					thisElts[i].pos.left = thisElts[i].pos.left - eltWidth
 				}
@@ -447,14 +517,15 @@
 			var thisElts = this.elts;
 			var n = Math.min(Math.max(parseInt(liPosition), 0), thisElts.length);
 			var o = this.options;
-			var elt = $("<li class='listItem'>" + liText + "</li>");
+			var listClass = o.isVertical ? 'listItem' : 'listItem-horizontal';
+			var elt = $('<li class=' + listClass +'>' + liText + '</li>');
 			if (addTrans) { elt[0].style[transformPrefix] = 'scale(0,0)'; elt[0].style.opacity = '0'; }
 		
 			var thisContainer = this.container;
 			var adjCon = this.adjCon;
 			var tempArr = [];
 			
-			
+				
 			for (var i=n;i<thisElts.length;i++) { 	
 				tempArr.push(thisElts[i]);				
 			}
@@ -467,15 +538,15 @@
 			if (thisElts.length == 0) {elt.css(eltObj).appendTo(ul)} 							// if there are no elements present at drop
 			else (n > 0 ? elt.insertAfter( thisElts[n-1]).css(eltObj) : elt.insertBefore( thisElts[n]).css(eltObj) );
 			
-		
-			var $thisWidth = (o.isVertical ? 0: elt.outerWidth(true));
-			var $thisHeight = elt.outerHeight(true);
+
+			var $thisWidth = o.isVertical ? 0: elt.outerWidth(true);
+			var $thisHeight = o.isVertical ? elt.outerHeight(true) : 0;
 		
 
 			for (var i=n;i<thisElts.length;i++) { 
 				thisElts[i].moved = false;
 				thisElts[i][0].style[transitionPrefix] = '0ms';					
-				thisElts[i][0].style[transformPrefix] = 'translate(0px,0px)';		
+				thisElts[i][0].style[transformPrefix] = 'translate3d(0px,0px,0px)';		
 				
 				thisElts[i][0].style.left = parseInt(thisElts[i][0].style.left) + $thisWidth + 'px'
 				thisElts[i][0].style.top = parseInt(thisElts[i][0].style.top) + $thisHeight + 'px' 
@@ -485,7 +556,7 @@
 					thisElts[i].transToZero(); 
 				}	
 			}
-				
+			
 				
 			ul.css({
 				'width' : '+=' + $thisWidth + 'px',
@@ -504,6 +575,7 @@
 			}
 			if (addTrans) {  elt[0].style[transitionPrefix] = '500ms';	elt[0].style[transformPrefix] = 'scale(1,1)'; elt[0].style.opacity = '1'; };				
 		
+			console.log(instanceArr)
 	}
 
 	
@@ -539,7 +611,7 @@
 			addToObject(thisElts, elt, n, $thisHeight, $thisWidth, o, thisContainer, adjCon);			
 						
 			n = n+1;
-			elt[0].style[transformPrefix] = 'translate3d(' + 0 + 'px, ' + 0 + 'px, 0px)';			
+			elt[0].style[transformPrefix] = 'translate3d(0px, 0px, 0px)';			
 		}
 		this.addHandlers();
 		
@@ -553,6 +625,7 @@
 		var targetOffsetX;
 		var $document = $('body');
 		var div = this.div;
+		var ul = this.ul;
 		var adjCon = this.adjCon;
 		var o = this.options;
 		var thisElts = this.elts	
@@ -566,7 +639,7 @@
 	
 	
 		
-		div.on("mousedown touchstart",liSelector,function(me){
+		ul.on("mousedown touchstart",liSelector,function(me){
 	
 			move = $(this);
 	
@@ -577,7 +650,7 @@
 			move.addClass('dragging');
 
 			//  instanceArr[adjCon].div[0].style.zIndex = '1'
-			div[0].style.zIndex = '2'  					// this causes a lag on drag in chrome ios
+			ul[0].style.zIndex = '2'  					// this causes a tiny lag on drag in chrome ios
  
 			if (me.type == 'touchstart') { me = me.originalEvent.touches[0] }
 				var startX = me.pageX, startY = me.pageY;
@@ -620,8 +693,8 @@
 			
 				move[0].style[transitionPrefix] = 'box-shadow 250ms';
 				move[0].style.zIndex = 1;
-				instanceArr[adjCon].div[0].style.zIndex = '1'
-				div[0].style.zIndex = '1'
+				instanceArr[adjCon].ul[0].style.zIndex = '1'
+				ul[0].style.zIndex = '1'
 				move.removeClass('dragging');
 				$document.off("mousemove touchmove mouseup touchend");
 				if (moveIsDragged == false) { 	return;   }

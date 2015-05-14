@@ -124,6 +124,7 @@ cursor: move;
 touch-action: none;
 -webkit-user-select: none;
 z-index: 1;
+white-space:nowrap;
 }
 
 

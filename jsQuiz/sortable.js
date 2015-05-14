@@ -11,10 +11,10 @@ $(document).ready(function() {
                  .on('selectstart', false);
     };
 })(jQuery);
-
+$("body").css("overflow", "hidden");
 		$('body').disableSelection();	
 		
-			var isVertical = true;
+			var isVertical = false;
 			
 			if (isVertical == true) {
 				
@@ -22,7 +22,8 @@ $(document).ready(function() {
 
 				$(".jMyPuzzle").css('opacity',1).jumbleScramble({
 						isVertical: isVertical,
-						cutOff: [600,800],
+					//	cutOff: [600,800],
+						dropLimit: [700, 700],
 						layoutComplete: function (instanceArray) {	
 								console.log(instanceArray)
 								
@@ -39,7 +40,7 @@ $(document).ready(function() {
 				
 				$(".jMyPuzzle").css('opacity',1).jumbleScramble({
 						isVertical: isVertical,
-						setChars: true,
+						setChars: false,
 						layoutComplete: function (instanceArray) {	
 								console.log(instanceArray)
 								// $(".jMyPuzzle").eq(0).jumbleScramble('add', 'Lorem ipsum dolor.', 6) 
