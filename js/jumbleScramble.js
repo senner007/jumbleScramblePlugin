@@ -367,7 +367,7 @@
 				instanceArr[elt.movesTo].addLiElem(elt.text(), elt.insertPos, false);
 				crossTrigger = false;
 				
-				instanceArr[elt.movesTo].cutOffEnd()
+				instanceArr[elt.movesTo].cutOffEnd(o)
 				
 					
 			}  
@@ -378,7 +378,7 @@
 	};
 	
 	function animateBack (elt, o) {				
-		
+		var eltMarginLeft = o.isVertical ? 0 : elt.completeWidth - elt[0].offsetWidth;					// set margin for horizontal
 		if (crossTrigger) {			
 			var instMovesTo = instanceArr[elt.movesTo];
 			var adjEltBefore = instMovesTo.elts[elt.insertPos -1];	
@@ -411,7 +411,7 @@
 		
 		elt[0].style.left = thisLeft + 'px'
 		elt[0].style.top = thisTop + 'px'
-		elt[0].style[transformPrefix] = 'translate3d(' + thisX  + 'px,' +  thisY + 'px,0px)';
+		elt[0].style[transformPrefix] = 'translate3d(' + (thisX - eltMarginLeft) + 'px,' +  thisY + 'px,0px)';
 	}
 	
 	function getOffset(elt){												
@@ -444,19 +444,20 @@
 		conCount++;
 		
 	};	
-	JumbleScramble.prototype.cutOffEnd = function () {
+	JumbleScramble.prototype.cutOffEnd = function (o) {
 		var oCutOff = this.cutOff;
 		
-		var eltsHeight = 0;
+		var eltsSize = 0;
+		var eltDim = o.isVertical ? 'completeHeight' : 'completeWidth';
 		for (var i=0;i<this.elts.length;i++) {
-				eltsHeight += this.elts[i].completeHeight;
+				eltsSize += this.elts[i][eltDim];
 			
 		}
-		while (eltsHeight > oCutOff) {
+		while (eltsSize > oCutOff) {
 			 
 			instanceArr[this.adjCon].addLiElem( this.elts[this.elts.length -1].text(), 0 , true)
 			this.removeLiElem( this.elts[this.elts.length -1] , true)
-			eltsHeight -=  this.elts[this.elts.length -1].completeHeight;
+			eltsSize -=  this.elts[this.elts.length -1][eltDim];
 			
 		}
 	
@@ -568,7 +569,10 @@
 			
 			
 			for (var i=0;i<tempArr.length;i++) { 
-				tempArr[i].pos.left = tempArr[i][0].offsetLeft;
+				console.log(tempArr[i][0].offsetWidth)
+				console.log(tempArr[i].completeWidth)
+				var marginLeft = o.isVertical ? 0 : (tempArr[i].completeWidth - tempArr[i][0].offsetWidth);				// account for margin
+				tempArr[i].pos.left = tempArr[i][0].offsetLeft - marginLeft; 
 				tempArr[i].pos.top =  tempArr[i][0].offsetTop;							
 				tempArr[i].n = n + i+1;
 				thisElts[n + 1 + i] = tempArr[i];			
@@ -615,7 +619,7 @@
 		}
 		this.addHandlers();
 		
-		o.isVertical ? 	div.find('ul').css({height: ulSize }) : div.find('ul').css({width:ulSize, height: li.outerHeight(true) + 'px' }); 	// Update the ul size
+		o.isVertical ? 	div.find('ul').css({height: ulSize }) : div.find('ul').css({width:ulSize, height: li.outerHeight() + 'px' }); 	// Update the ul size
 
 	};
 
