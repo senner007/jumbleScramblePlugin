@@ -476,56 +476,50 @@
 
 	JumbleScramble.prototype.removeLiElem = function () {							// Remove new li to previous collection
 		
-			var o = this.options;
 			var elt = arguments[0];
-			var removeTrans = arguments[1]
-			
-			
+			var removeTrans = arguments[1];
 			var n = elt.index();
 			var thisElts = this.elts;
-			var tempArr = [];
 			var eltHeight = thisElts[n].completeHeight;
 			var eltWidth = thisElts[n].completeWidth;
-			
-			for (var i=0;i<thisElts.length;i++) { 
-				if (i > n) {	
-					thisElts[i][0].style[transitionPrefix] = removeTrans ? '250ms' : '0s';
-					thisElts[i -1] = thisElts[i] 
-					thisElts[i].n = i-1;
-					thisElts[i][0].style.top  = parseInt(thisElts[i][0].style.top) - eltHeight + 'px'
-					thisElts[i][0].style.left  = parseInt(thisElts[i][0].style.left) - eltWidth + 'px'
-					thisElts[i][0].style[transformPrefix] =  'translate(0px,0px,0px)';
-					thisElts[i].pos.top = thisElts[i].pos.top  - eltHeight
-					thisElts[i].pos.left = thisElts[i].pos.left - eltWidth
-				}
+	
+			for (var i=n +1;i<thisElts.length;i++) { 
+					var el = thisElts[i];
+					el[0].style[transitionPrefix] = removeTrans ? '250ms' : '0s';
+					thisElts[i -1] = el;
+					el.n = i-1;
+					el[0].style.top  = el.pos.top - eltHeight + 'px';
+					el[0].style.left  = el.pos.left - eltWidth + 'px';
+					el[0].style[transformPrefix] =  'translate(0px,0px,0px)';
+					el.pos.top = el.pos.top  - eltHeight;
+					el.pos.left = el.pos.left - eltWidth;				
 			};
-			thisElts.length = thisElts.length -1
-			
-			
+			thisElts.length = thisElts.length -1;
+		
 			if (removeTrans) { 
 				elt[0].style[transformPrefix] = 'scale(0.5,0.5)'; 
 				elt[0].style.opacity = '0'; 
 				elt[0].style[transitionPrefix] = '250ms'; 
 				setTimeout(function(){ 
 					elt.remove()
+	
 				}, 250);
 			}
-			else {elt.remove()}
-				
+			else {
+				elt.remove();
+			}		
 			
 			this.ul.css({
 				'width' : '-=' + eltWidth + 'px',
 				'height' :'-=' + eltHeight + 'px'
 				
-			})
-					
+			});
 	};	
 	
 	
 	JumbleScramble.prototype.addLiElem = function (liText, liPosition, addTrans) {								// Add new li to previous collection
 			
-		 	var div = this.div; 
-			var ul = this.ul; 
+
 			var thisElts = this.elts;
 			var n = Math.min(Math.max(parseInt(liPosition), 0), thisElts.length);
 			var o = this.options;
@@ -533,11 +527,7 @@
 			var elt = $('<li class=' + listClass +'>' + liText + '</li>');
 			if (addTrans) { elt[0].style[transformPrefix] = 'scale(0,0)'; elt[0].style.opacity = '0'; }
 		
-			var thisContainer = this.container;
-			var adjCon = this.adjCon;
-			var tempArr = [];
-			
-				
+			var tempArr = [];	
 			for (var i=n;i<thisElts.length;i++) { 	
 				tempArr.push(thisElts[i]);				
 			}
@@ -547,7 +537,7 @@
 				'top' : n > 0 ? thisElts[n -1].pos.top + thisElts[n -1].completeHeight + 'px' : 0
 			}
 			
-			if (thisElts.length == 0) {elt.css(eltObj).appendTo(ul)} 							// if there are no elements present at drop
+			if (thisElts.length == 0) {elt.css(eltObj).appendTo(this.ul)} 							// if there are no elements present at drop
 			else (n > 0 ? elt.insertAfter( thisElts[n-1]).css(eltObj) : elt.insertBefore( thisElts[n]).css(eltObj) );
 			
 
@@ -556,32 +546,30 @@
 		
 
 			for (var i=n;i<thisElts.length;i++) { 
+				var ets0 = thisElts[i][0];
 				thisElts[i].moved = false;
-				thisElts[i][0].style[transitionPrefix] = '0ms';					
-				thisElts[i][0].style[transformPrefix] = 'translate3d(0px,0px,0px)';		
-				
-				thisElts[i][0].style.left = parseInt(thisElts[i][0].style.left) + $thisWidth + 'px'
-				thisElts[i][0].style.top = parseInt(thisElts[i][0].style.top) + $thisHeight + 'px' 
+				ets0.style[transitionPrefix] = '0ms';					
+				ets0.style[transformPrefix] = 'translate3d(0px,0px,0px)';		
+				ets0.style.left = parseInt(ets0.style.left) + $thisWidth + 'px'
+				ets0.style.top = parseInt(ets0.style.top) + $thisHeight + 'px' 
 				
 				if (addTrans) {
-					thisElts[i][0].style[transformPrefix] = 'translate(' + -($thisWidth)  + 'px,' +  -($thisHeight) + 'px)';	
+					ets0.style[transformPrefix] = 'translate(' + -($thisWidth)  + 'px,' +  -($thisHeight) + 'px)';	
 					thisElts[i].transToZero(); 
 				}	
 			}
 			
 				
-			ul.css({
+			this.ul.css({
 				'width' : '+=' + $thisWidth + 'px',
 				'height' :'+=' + $thisHeight + 'px'
 				
 			})
 					
-			addToObject(thisElts, elt, n, $thisHeight, $thisWidth, o, thisContainer, adjCon);
+			addToObject(thisElts, elt, n, $thisHeight, $thisWidth, o, this.container, this.adjCon);
 			
 			
 			for (var i=0;i<tempArr.length;i++) { 
-				console.log(tempArr[i][0].offsetWidth)
-				console.log(tempArr[i].completeWidth)
 				var marginLeft = o.isVertical ? 0 : (tempArr[i].completeWidth - tempArr[i][0].offsetWidth);				// account for margin
 				tempArr[i].pos.left = tempArr[i][0].offsetLeft - marginLeft; 
 				tempArr[i].pos.top =  tempArr[i][0].offsetTop;							
@@ -590,7 +578,6 @@
 			}
 			if (addTrans) {  elt[0].style[transitionPrefix] = '500ms';	elt[0].style[transformPrefix] = 'scale(1,1)'; elt[0].style.opacity = '1'; };				
 		
-			console.log(instanceArr)
 	}
 
 	
@@ -598,17 +585,16 @@
 	
 	JumbleScramble.prototype.init = function () {
 		
-		var o = this.options; 
-		var div = this.div,  li = div.find('li');					// Variables declaration
+	
+		var li = this.div.find('li');					// Variables declaration
 		var left=0, top = 0, n = 0, ulSize = 0;	
-		var thisContainer = this.container;	
-		var adjCon = this.adjCon;
+		
 		var thisElts = this.elts = new Array(li.size());
 			
 		for (var i=0;i<thisElts.length;i++) { 
 			var elt = li.eq(i);	
 			
-			if (o.isVertical) {
+			if (this.options.isVertical) {
 				elt.css('top', top + 'px');											// get each li height in case of individual heights.
 				var $thisHeight = elt.outerHeight(true);
 				top += $thisHeight;	
@@ -623,14 +609,16 @@
 				ulSize += $thisWidth; 												// calculate the size of the ul element				
 			}	
 			
-			addToObject(thisElts, elt, n, $thisHeight, $thisWidth, o, thisContainer, adjCon);			
+			addToObject(thisElts, elt, n, $thisHeight, $thisWidth, this.options, this.container, this.adjCon);			
 						
 			n = n+1;
 			elt[0].style[transformPrefix] = 'translate3d(0px, 0px, 0px)';			
 		}
 		this.addHandlers();
 		
-		o.isVertical ? 	div.find('ul').css({height: ulSize }) : div.find('ul').css({width:ulSize, height: li.outerHeight() + 'px' }); 	// Update the ul size
+		this.options.isVertical ? 	this.ul.css({height: ulSize }) : this.ul.css({width:ulSize, height: thisElts[0].outerHeight() + 'px' }); 	// Update the ul size
+		
+		
 
 	};
 
@@ -654,10 +642,12 @@
 		var delegate = isTouch ? '.dragging' : '';			// mousemove loses control if delegated 
 		var dontTouch = false;
 		var liSelector = o.isVertical == true ? '.listItem' : '.listItem-horizontal'
-	
+			ul[0].style.zIndex = '1'
 	
 		
-		ul.on(eStart,liSelector,function(me){
+		ul.on(eStart,liSelector, start);
+		
+		function start(me){
 			me.preventDefault;
 			if (dontTouch == true) {return;}					// flag to prevent multi 
 			dontTouch = true;
@@ -667,6 +657,7 @@
 			move[0].style[transitionPrefix] = '0s';
 			move[0].style.zIndex = 5;
 			move.addClass('dragging');
+		
 			instanceArr[adjCon].ul[0].style.zIndex = '-1'	// this causes a tiny lag on drag in chrome ios
 															// it will also prevent the adjacent ul from
 															// responding to touch events
@@ -710,7 +701,7 @@
 			
 			move.on(eEnd,function(e){
 				e.preventDefault;
-		
+			
 				move[0].style[transitionPrefix] = 'box-shadow 250ms';
 				move[0].style.zIndex = 1;
 				instanceArr[adjCon].ul[0].style.zIndex = '1'
@@ -727,7 +718,7 @@
 				dontTouch = false;
 				onStop(e, elt, div, o)
 			});
-		});
+		}
 			
 	}; 
 	
