@@ -14,7 +14,7 @@ $(document).ready(function() {
 $("body").css("overflow", "hidden");
 		$('body').disableSelection();	
 		
-			var isVertical = false;
+			var isVertical = true;
 			
 			if (isVertical == true) {
 				
@@ -22,7 +22,7 @@ $("body").css("overflow", "hidden");
 
 				$(".jMyPuzzle").css('opacity',1).jumbleScramble({
 						isVertical: isVertical,
-					cutOff: [400,400],
+					cutOff: [600,600],
 						//dropLimit: [700, 700],
 						layoutComplete: function (instanceArray) {	
 								console.log(instanceArray)
@@ -41,7 +41,7 @@ $("body").css("overflow", "hidden");
 				$(".jMyPuzzle").css('opacity',1).jumbleScramble({
 						isVertical: isVertical,
 						setChars: false,
-						cutOff: [600,800],
+						cutOff: [600,600],
 						layoutComplete: function (instanceArray) {	
 								console.log(instanceArray)
 								// $(".jMyPuzzle").eq(0).jumbleScramble('add', 'Lorem ipsum dolor.', 6) 

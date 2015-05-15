@@ -13,6 +13,13 @@
 		}
 		return false;
 	})();
+	
+	var isTouch = (function is_touch_device() {
+		return (('ontouchstart' in window)
+		|| (navigator.MaxTouchPoints > 0)
+		|| (navigator.msMaxTouchPoints > 0));
+	})();
+	console.log(isTouch)
 
 	
 	
@@ -249,7 +256,12 @@
 			var tempArr = [];
 			var objOffset = o.isVertical ? 'top' : 'left';
 			var objDimension = o.isVertical ? 'completeHeight' : 'completeWidth';
-			var objTranslate = o.isVertical ? 'translate3d(0px,' + elt[objDimension] + 'px,0px)' : 'translate3d(' + elt[objDimension] + 'px,0px,0px)'
+			if (transSupport) { 
+				var objTranslate = o.isVertical ? 'translate3d(0px,' + elt[objDimension] + 'px,0px)' : 'translate3d(' + elt[objDimension] + 'px,0px,0px)'; 
+			}
+			else {  
+				var objTranslate = o.isVertical ? 'translateY(' + elt[objDimension] + 'px)' : 'translateX(' + elt[objDimension] + 'px)';  
+			}
 			for(var i = 0; i < adjConElts.length; i++){ 							//Loop the array
 				var obj = adjConElts[i]
 				
@@ -274,7 +286,7 @@
 		
 		},
 		triggerOff : function (elt, adjConElts, elts, o) {									// going back to the originating container
-			console.log('hello back')
+			
 			var objOffset = o.isVertical ? 'top' : 'left';
 			var objDimension = o.isVertical ? 'completeHeight' : 'completeWidth';	
 			for(var i = 0; i < adjConElts.length; i++){ 						//Loop over adjacentContainer elements
@@ -298,7 +310,7 @@
 				var obj = adjConElts[elt.insertPos -1]
 				if (elt.currentPos.top  < obj.pos.top + obj.completeHeight/2 && obj.moved == false) {					
 					obj[0].style[transitionPrefix] = '250ms ease';
-					obj[0].style[transformPrefix] = 'translateY(' + elt.completeHeight + 'px)';	
+					obj[0].style[transformPrefix] = transSupport ? 'translate3d(0px,' + elt.completeHeight + 'px, 0px)' : 'translateY(' + elt.completeHeight + 'px)';	
 					obj.moved = true;
 					elt.insertPos = obj.n;
 					obj.pos.top = obj.pos.top + elt.completeHeight;
@@ -335,7 +347,7 @@
 				if (elt.currentPos.left  < obj.pos.left + obj.completeWidth/2 && obj.moved == false) {
 				
 					obj[0].style[transitionPrefix] = '250ms ease';
-					obj[0].style[transformPrefix] = 'translate3d(' + elt.completeWidth + 'px,0px,0px)';	
+					obj[0].style[transformPrefix] = transSupport ? 'translate3d(' + elt.completeWidth + 'px,0px,0px)' : 'translateX(' + elt.completeWidth + 'px)';	
 					obj.moved = true;
 					elt.insertPos = obj.n;
 					obj.pos.left = obj.pos.left + elt.completeWidth;		
@@ -367,7 +379,7 @@
 				instanceArr[elt.movesTo].addLiElem(elt.text(), elt.insertPos, false);
 				crossTrigger = false;
 				
-				instanceArr[elt.movesTo].cutOffEnd(o)
+				instanceArr[elt.movesTo].cutOffEnd()
 				
 					
 			}  
@@ -444,11 +456,10 @@
 		conCount++;
 		
 	};	
-	JumbleScramble.prototype.cutOffEnd = function (o) {
+	JumbleScramble.prototype.cutOffEnd = function () {
 		var oCutOff = this.cutOff;
-		
 		var eltsSize = 0;
-		var eltDim = o.isVertical ? 'completeHeight' : 'completeWidth';
+		var eltDim = this.options.isVertical ? 'completeHeight' : 'completeWidth';
 		for (var i=0;i<this.elts.length;i++) {
 				eltsSize += this.elts[i][eltDim];
 			
@@ -637,24 +648,28 @@
 		var movePos = {};
 		var elt;
 		var moveIsDragged = false;
-		
-	
+		var eStart = isTouch ? 'touchstart' : 'mousedown',
+			eMove = isTouch ? 'touchmove' : 'mousemove',
+			eEnd = isTouch ? 'touchend' : 'mouseup'
+		var delegate = isTouch ? '.dragging' : '';			// mousemove loses control if delegated 
+		var dontTouch = false;
 		var liSelector = o.isVertical == true ? '.listItem' : '.listItem-horizontal'
 	
 	
 		
-		ul.on("mousedown touchstart",liSelector,function(me){
-	
+		ul.on(eStart,liSelector,function(me){
+			me.preventDefault;
+			if (dontTouch == true) {return;}					// flag to prevent multi 
+			dontTouch = true;
 			move = $(this);
+
 	
 			move[0].style[transitionPrefix] = '0s';
-			
-
 			move[0].style.zIndex = 5;
 			move.addClass('dragging');
-
-			//  instanceArr[adjCon].div[0].style.zIndex = '1'
-			ul[0].style.zIndex = '2'  					// this causes a tiny lag on drag in chrome ios
+			instanceArr[adjCon].ul[0].style.zIndex = '-1'	// this causes a tiny lag on drag in chrome ios
+															// it will also prevent the adjacent ul from
+															// responding to touch events
  
 			if (me.type == 'touchstart') { me = me.originalEvent.touches[0] }
 				var startX = me.pageX, startY = me.pageY;
@@ -665,9 +680,9 @@
 			elt = thisElts[move.index()]
 	
 			
-			$document.on("mousemove touchmove",function(e){
+			$document.on(eMove, delegate ,function(e){
 				e.preventDefault();
-				
+	
 				moveIsDragged = true;
 				if (e.type == 'touchmove') { e = e.originalEvent.changedTouches[0]}	
 				var newDx = e.pageX - startX,
@@ -693,23 +708,23 @@
 		
 			});
 			
-			$document.on("mouseup touchend",function(e){
-			
+			move.on(eEnd,function(e){
+				e.preventDefault;
+		
 				move[0].style[transitionPrefix] = 'box-shadow 250ms';
 				move[0].style.zIndex = 1;
 				instanceArr[adjCon].ul[0].style.zIndex = '1'
 				ul[0].style.zIndex = '1'
 				move.removeClass('dragging');
 				$document.off("mousemove touchmove mouseup touchend");
-				if (moveIsDragged == false) { 	return;   }
-				moveIsDragged = false;				
+								
 				if (transSupport) {
 					move[0].style[transformPrefix] = 'translateZ(0) translate3d(' + 0 + 'px, ' + 0 + 'px, 0px)';		
 				}
 				move[0].style.top = targetOffsetY + movePos.dy + 'px'
 				move[0].style.left = targetOffsetX + movePos.dx + 'px'
 				
-	
+				dontTouch = false;
 				onStop(e, elt, div, o)
 			});
 		});
