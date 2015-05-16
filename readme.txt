@@ -1,13 +1,32 @@
 Todo:
++ add global vars for 'top'/'left' and 'completeHeight'/'completeWidth'
 + lock method prototype
 + animateBack to prototype
-+ add margin for elt to constructor the first time it is calcuylated in animateback
++ add margin for elt to constructor the first time it is calculated in animateback
 + dirSwitch on constructor
-+ prevent multi-touch
-+ prevent mouse event on touch device
 + setChars function should update elt object as well
 + Fix lag on touchstart in chrome ios
-+ account for margin set vertically on li
 + Dragging enable/disable method
 + cutOffEnd on init
 + shuffle method
++ set width of list item in vertical layout if width is not set in css
++ test in slider
++ Add/Remove Elements on trigger ( long term )
++ Multiple container drop ( long term )
+
+Working:
++ List items in vertical or horizontal layout
++ Hardware accelerated Animations
++ Dragging using mouse or touch
++ Cross-dragging between list containers
++ Individual height or width of list items
++ Optional margin between list items
++ Specify maximum height of list items container
++ Add and remove items from containers
++ Remove and prepend items to previous container to prevent overflow
+
+
+Dependency:
+jQuery ? - latest
+
+  
