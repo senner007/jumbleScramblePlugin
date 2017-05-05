@@ -22,14 +22,15 @@ $("body").css("overflow", "hidden");
 
 				$(".jMyPuzzle").css('opacity',1).jumbleScramble({
 						isVertical: isVertical,
-					cutOff: [600,600],
-						//dropLimit: [700, 700],
+						cutOff: [600,600],
+						dropLimit: [500, 500],
 						layoutComplete: function (instanceArray) {	
-								console.log(instanceArray)
+							//	console.log(instanceArray)
 								
 							//	 $(".jMyPuzzle").eq(0).jumbleScramble('add', 'Lorem ipsum dolor.', 6) 
 						// $(".jMyPuzzle").eq(1).jumbleScramble('add', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam et mi sapien.', 3, true)  
 						//$(".jMyPuzzle").eq(0).find('li').eq(0).jumbleScramble('remove', '' ,true)  // add true or false to animate remove 
+						//console.log ( $(".jMyPuzzle").eq(0).find('li').eq(3).text() );
 								$(".jMyPuzzle").eq(0).find('li').eq(3).jumbleScramble('remove', '' ,true)  // add true or false to animate remove 
 						}						
 					});	
@@ -42,7 +43,8 @@ $("body").css("overflow", "hidden");
 				$(".jMyPuzzle").css('opacity',1).jumbleScramble({
 						isVertical: isVertical,
 						setChars: false,
-						cutOff: [600,600],
+						dropLimit: [300, 300], // currently doesn't work but must be set
+						cutOff: [1000,1000],
 						layoutComplete: function (instanceArray) {	
 								console.log(instanceArray)
 								// $(".jMyPuzzle").eq(0).jumbleScramble('add', 'Lorem ipsum dolor.', 6) 

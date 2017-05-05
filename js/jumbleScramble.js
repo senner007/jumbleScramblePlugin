@@ -19,7 +19,7 @@
 		|| (navigator.MaxTouchPoints > 0)
 		|| (navigator.msMaxTouchPoints > 0));
 	})();
-	console.log(isTouch)
+	//console.log(isTouch)
 
 	
 	
@@ -103,13 +103,18 @@
 		
 		
 		/*--------------------------------------------------------------------*/	
-		if (dirSwitch && crossTrigger == false /* && adjConElts[adjConElts.length -1].pos.top + adjConElts[adjConElts.length -1].completeHeight <= instanceArr[elt.movesTo].dropLimit */) {   // trigger animations for 
+		if (dirSwitch && crossTrigger == false  && adjConElts[adjConElts.length -1].pos.top + adjConElts[adjConElts.length -1].completeHeight <= instanceArr[elt.movesTo].dropLimit ) {   // trigger animations for 
 																																														// adjacent container if below 
-																																														// dropLimit
+																																														// dropLimit - refactor to add method for horizontal too.
 			onDragAdj.triggerOn(elt, adjConElts, elts, o); 
 			crossTrigger = true;
+			console.log(crossTrigger)
+			console.log(Object.keys(elts).length)
+			
 		}; 							
 		if (!dirSwitch && crossTrigger == true && Object.keys(elts).length > 1) { 											// go back to originating container
+			console.log('back to originating')
+		
 			onDragAdj.triggerOff(elt, adjConElts, elts, o);
 			crossTrigger = false;			
 		};		
@@ -139,8 +144,8 @@
 			}
 			else {
 				onDragElts.eltsMoveBack(elt, elts)
-				onDragElts.eltsMoveBack(elt, elts)
-				onDragElts.eltsMoveBack(elt, elts)
+				/* onDragElts.eltsMoveBack(elt, elts)
+				onDragElts.eltsMoveBack(elt, elts) */
 			}
 		} 
 		if (move == 'up'){																		//  move up	
