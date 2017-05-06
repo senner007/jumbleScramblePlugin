@@ -103,15 +103,22 @@
 		
 		
 		/*--------------------------------------------------------------------*/	
-		if (dirSwitch && crossTrigger == false  && adjConElts[adjConElts.length -1].pos.top + adjConElts[adjConElts.length -1].completeHeight <= instanceArr[elt.movesTo].dropLimit ) {   // trigger animations for 
-																																														// adjacent container if below 
-																																														// dropLimit - refactor to add method for horizontal too.
-			onDragAdj.triggerOn(elt, adjConElts, elts, o); 
-			crossTrigger = true;
-			console.log(crossTrigger)
-			console.log(Object.keys(elts).length)
-			
-		}; 							
+		
+		// trigger animations for 
+		// adjacent container if below 
+		// dropLimit - refactor to add method for horizontal too.
+		
+			if (dirSwitch && crossTrigger == false ) {   
+					
+				if ( !instanceArr[elt.movesTo].dropLimit || !adjConElts[adjConElts.length -1] || adjConElts[adjConElts.length -1].pos.top + adjConElts[adjConElts.length -1].completeHeight <= instanceArr[elt.movesTo].dropLimit ) {
+					// if the adjacent container is empty  - or - if the last items position is not above dropLimit then move to new container. Otherwise go back
+					
+				
+					onDragAdj.triggerOn(elt, adjConElts, elts, o); 
+					crossTrigger = true;
+				}
+			}; 
+	
 		if (!dirSwitch && crossTrigger == true && Object.keys(elts).length > 1) { 											// go back to originating container
 			console.log('back to originating')
 		
@@ -368,7 +375,7 @@
 		animateBack(elt, o);		
 		elt.transToZero();	
 		
-		if (o.setChars)	{setChars(elt);	}	// setChars function	- re-align lis after uppercase/lowercase for difficulty setting  2																
+		if (o.setChars)	{setChars(elt);	console.log('setting chars');}	// setChars function	- re-align lis after uppercase/lowercase for difficulty setting  2																
 		
 		transSupport ? elt.one('transitionend', function () { appendRemove() }) : appendRemove() // only wait for transitionend if supported (not ie9)
 
@@ -453,7 +460,7 @@
 		conCount++;
 		
 	};	
-	JumbleScramble.prototype.cutOffEnd = function () {
+	JumbleScramble.prototype.cutOffEnd = function () {				// function to remove the items above cutoff limit and then prepend the adjacent container
 		var eltsSize = 0;
 		var eltDim = this.options.isVertical ? 'completeHeight' : 'completeWidth';
 		for (var i=0;i<this.elts.length;i++) {
@@ -469,13 +476,14 @@
 			eltsSize -=  this.elts[this.elts.length -1][eltDim];
 			
 		}
-		if (transSupport) { 
+
+		if (transSupport && instanceArr[this.adjCon].elts.length != 0) { // transition elements to make way for prepended but only if if there are any 
 			for (var i=0;i<tArr.length;i++) {																					
 				 tArr[i][0].style[transitionPrefix] = '0ms';	  tArr[i][0].style[transformPrefix] = 'scale(0,0)';
-				
+				console.log( instanceArr[this.adjCon].elts[instanceArr[this.adjCon].elts.length -1].text())
 				} 
-
-			instanceArr[this.adjCon].elts[instanceArr[this.adjCon].elts.length -1].one('transitionend', function (){
+				
+			instanceArr[this.adjCon].elts[instanceArr[this.adjCon].elts.length -1].one('transitionend', function (){		// callback function for when the items have moved down and made room for the newly prepended item(s)
 				for (var i=0;i<tArr.length;i++) {
 				 tArr[i][0].style[transitionPrefix] = '500ms';	  tArr[i][0].style[transformPrefix] = 'scale(1,1)';
 				
@@ -660,9 +668,12 @@
 	
 		
 		ul.on(eStart,liSelector, start);
+	
 		
 		function start(me){
-			me.preventDefault;
+		
+			 me.preventDefault;
+			
 			if (dontTouch == true) {return;}					// flag to prevent multi 
 			dontTouch = true;
 			move = $(this);
@@ -685,9 +696,9 @@
 			elt = thisElts[move.index()]
 	
 			
-			$document.on(eMove, delegate ,function(e){
+			$document.on(eMove,function(e){
 				e.preventDefault();
-	
+				
 				moveIsDragged = true;
 				if (e.type == 'touchmove') { e = e.originalEvent.changedTouches[0]}	
 				var newDx = e.pageX - startX,

@@ -3,16 +3,20 @@
 //$(window).bind("load", function() {
 $(document).ready(function() {	
 
-(function($){
+  (function($){											
     $.fn.disableSelection = function() {
         return this
                  .attr('unselectable', 'on')
                  .css('user-select', 'none')
                  .on('selectstart', false);
     };
-})(jQuery);
-$("body").css("overflow", "hidden");
+})(jQuery);  
+ $("body").css("overflow", "hidden");
 		$('body').disableSelection();	
+		$('ul').on('touchmove',function(e){
+			e.preventDefault();
+		});
+
 		
 			var isVertical = true;
 			
@@ -22,8 +26,8 @@ $("body").css("overflow", "hidden");
 
 				$(".jMyPuzzle").css('opacity',1).jumbleScramble({
 						isVertical: isVertical,
-						cutOff: [600,600],
-						dropLimit: [500, 500],
+						cutOff: [9000,9000],
+						//dropLimit: [800,800],   // dropLimit will set the maximum height for the container to allow items to be dropped.
 						layoutComplete: function (instanceArray) {	
 							//	console.log(instanceArray)
 								
@@ -42,9 +46,9 @@ $("body").css("overflow", "hidden");
 				
 				$(".jMyPuzzle").css('opacity',1).jumbleScramble({
 						isVertical: isVertical,
-						setChars: false,
+						setChars: false, // does not work when moving to another container
 						dropLimit: [300, 300], // currently doesn't work but must be set
-						cutOff: [1000,1000],
+						cutOff: [900,900],
 						layoutComplete: function (instanceArray) {	
 								console.log(instanceArray)
 								// $(".jMyPuzzle").eq(0).jumbleScramble('add', 'Lorem ipsum dolor.', 6) 

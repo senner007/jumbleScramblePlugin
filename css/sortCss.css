@@ -1,118 +1,81 @@
 *{
   margin:0;
   padding:0;
-
-
-
 }
-
-
 
 #container {
 margin: auto;
 margin-top: 50px;
 width: 1000px;
-height: 700px;
-  
-  
+height: 700px; 
 }
-
-
 
 div.jMyPuzzle {
 width: 480px;
 height: 630px;
 position: absolute;
 opacity: 0;
-
-
   
-
-   
 }
+
 #jMyPuzzleId1 {
 width: 495px;
 height: 630px;
 position: absolute;
-margin-left: 500px;
-
-   
+margin-left: 500px; 
 }
 
 #jMyPuzzleId2 {
 width: 900px;
-
 position: absolute;
 left:0px;
-
-   
 }
 
 #jMyPuzzleId3 {
 width: 900px;
-
 position: absolute;
 left:0px;
-margin-top: 50px;
-   
+margin-top: 50px;  
 }
 
 
 .splitList {
 width: inherit;
-
 position: absolute;
 display: block;     
-
-
-
 }
 
 .splitList-horizontal {
 width: inherit;
-
 position: absolute;
 display: block;
-
 }
 
 .listItem {
 position: absolute;
 list-style: none;
-
 font-size:18px;
-
 margin-bottom: 5px;
 padding: 5px;
 width: 400px;
 color: rgba(34, 34, 34,1);
-
  border-radius: 1px;			/* needed for ipad box shadow */
 -webkit-box-shadow: 0;
 -moz-box-shadow: 0;
 box-shadow: 0;
 background: white;
 z-index: 1;
-
-
-
 }
 
 .dragging {
 -webkit-box-shadow: 0px 2px 10px rgba(0,0,0,.7);
 -moz-box-shadow: 0px 2px 10px rgba(0,0,0,.7);
 box-shadow: 0px 2px 10px rgba(0,0,0,.7);
-
-
 }
-
-
-
 
 .listItem-horizontal {
 position: absolute;
 list-style: none;
-
 font-size:22px;
 padding: 7px;
 margin-left: 20px;
@@ -126,5 +89,3 @@ touch-action: none;
 z-index: 1;
 white-space:nowrap;
 }
-
-

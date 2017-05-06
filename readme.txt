@@ -1,11 +1,11 @@
 Todo:
 + add global vars for 'top'/'left' and 'completeHeight'/'completeWidth'
 + lock method prototype
++ make dropLimit work in horizontal mode
 + animateBack to prototype
 + add margin for elt to constructor the first time it is calculated in animateback
 + dirSwitch on constructor
-+ setChars function should update elt object as well
-+ Fix lag on touchstart in chrome ios
++ setChars function should update elt object as well, it does not work when moving to another container
 + Dragging enable/disable method
 + cutOffEnd on init
 + shuffle method
