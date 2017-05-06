@@ -79,16 +79,17 @@
 
 	function onDrag(elt, elts, o){													// Drag
 		
-		var ui = {};	
-		ui.top = elt.currentPos.top;											// Redundancy - FIX ME
-		ui.left = elt.currentPos.left;
-			
+		var eltPos = {	
+			top : elt.currentPos.top,											
+			left : elt.currentPos.left
+		}
+		
 		var thisElt = this;															//must be saved to a variable to avoid random 
-																					// occurrences of non moving objects on ipad
-		var oldPos = (thisElt.eltPos != null ? thisElt.eltPos : ui); 			//find the old position stored on the $object
-		thisElt.eltPos = ui;													//its current position derived from $draggable object		
+																						// occurrences of non moving objects on ipad
+		var oldPos = (thisElt.eltPos != null ? thisElt.eltPos : eltPos); 			//find the old position stored on the $object
+		thisElt.eltPos = eltPos;													//its current position derived from $draggable object		
 		
-		
+
 		if (instanceArr.length > 1 && o.isVertical) {			
 			var adjConElts = instanceArr[elt.movesTo].elts;
 			var adjacentDir = instanceArr[elt.movesTo].divOffset.left -  instanceArr[elt.belongsTo].divOffset.left;	
@@ -100,24 +101,23 @@
 			var dirSwitch = (elt.belongsTo % 2 == 0 ? thisElt.eltPos.top > adjacentDir/2 : thisElt.eltPos.top < adjacentDir/2);  				
 		}
 		
-		
-		
+	
 		/*--------------------------------------------------------------------*/	
 		
 		// trigger animations for 
 		// adjacent container if below 
 		// dropLimit - refactor to add method for horizontal too.
 		
-			if (dirSwitch && crossTrigger == false ) {   
-					
-				if ( !instanceArr[elt.movesTo].dropLimit || !adjConElts[adjConElts.length -1] || adjConElts[adjConElts.length -1].pos.top + adjConElts[adjConElts.length -1].completeHeight <= instanceArr[elt.movesTo].dropLimit ) {
-					// if the adjacent container is empty  - or - if the last items position is not above dropLimit then move to new container. Otherwise go back
-					
+		if (dirSwitch && crossTrigger == false ) {   
 				
-					onDragAdj.triggerOn(elt, adjConElts, elts, o); 
-					crossTrigger = true;
-				}
-			}; 
+			if ( o.dropLimit == false || !adjConElts[adjConElts.length -1] || adjConElts[adjConElts.length -1].pos.top + adjConElts[adjConElts.length -1].completeHeight <= instanceArr[elt.movesTo].dropLimit ) {
+				// if droplimit is false - or - if the adjacent container is empty  - or - if the last items position is not above dropLimit then move to new container. Otherwise go back
+				
+			
+				onDragAdj.triggerOn(elt, adjConElts, elts, o); 
+				crossTrigger = true;
+			}
+		}; 
 	
 		if (!dirSwitch && crossTrigger == true && Object.keys(elts).length > 1) { 											// go back to originating container
 			console.log('back to originating')
@@ -389,7 +389,7 @@
 				instanceArr[elt.belongsTo].removeLiElem(elt, false) 
 				instanceArr[elt.movesTo].addLiElem(elt.text(), elt.insertPos, false);
 				crossTrigger = false;
-				
+		
 				instanceArr[elt.movesTo].cutOffEnd()		
 			}  
 		}; 		
@@ -450,12 +450,12 @@
 		this.ul = this.div.find('ul');
 		this.container = conCount;		
 		this.adjCon = this.container % 2 == 0 ? this.container +1 : this.container -1;
+		
 		this.options = $.extend( {}, defaults, options) ;
 		this.init();
-		this.cutOff = this.options.cutOff[conCount];
-		this.dropLimit = this.options.dropLimit[conCount];
+		this.cutOff = conCount % 2 ? this.options.cutOff[1] : this.options.cutOff[0];      // for instance if container count is 3 then it is an odd number and will get the second number in cutOff array
+		this.dropLimit = this.options.dropLimit[0];
 		this.ul[0].style[transformPrefix] = 'translate3d(0px,0px,0px)';		
-		
 		
 		conCount++;
 		
@@ -683,9 +683,9 @@
 			move[0].style.zIndex = 5;
 			move.addClass('dragging');
 		
-			instanceArr[adjCon].ul[0].style.zIndex = '-1'	// this causes a tiny lag on drag in chrome ios
-															// it will also prevent the adjacent ul from
-															// responding to touch events
+			if ( instanceArr[adjCon]) { instanceArr[adjCon].ul[0].style.zIndex = '-1'}	// this causes a tiny lag on drag in chrome ios
+																						// it will also prevent the adjacent ul from
+																						// responding to touch events
  
 			if (me.type == 'touchstart') { me = me.originalEvent.touches[0] }
 				var startX = me.pageX, startY = me.pageY;
@@ -729,7 +729,7 @@
 			
 				move[0].style[transitionPrefix] = 'box-shadow 250ms';
 				move[0].style.zIndex = 1;
-				instanceArr[adjCon].ul[0].style.zIndex = '1'
+					if ( instanceArr[adjCon]) { instanceArr[adjCon].ul[0].style.zIndex = '1'};
 				ul[0].style.zIndex = '1'
 				move.removeClass('dragging');
 				$document.off("mousemove touchmove mouseup touchend");
@@ -767,7 +767,9 @@
 			
 		}
 		else {
-			return this.each(function (i,e) {										
+			
+			return this.each(function (i,e) {
+				
 				
 				instanceArr.push(new JumbleScramble(this, options, arg1, arg2)) 	
 			}).promise().done(function (){

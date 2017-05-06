@@ -26,16 +26,35 @@ margin-left: 500px;
 }
 
 #jMyPuzzleId2 {
-width: 900px;
+
 position: absolute;
 left:0px;
+height: 50px;
+margin-top: 700px;
 }
 
 #jMyPuzzleId3 {
-width: 900px;
+
 position: absolute;
 left:0px;
-margin-top: 50px;  
+height: 50px;
+margin-top: 750px;  
+}
+
+#jMyPuzzleId4 {
+
+position: absolute;
+left:0px;
+height: 50px;
+margin-top: 800px;
+}
+
+#jMyPuzzleId5 {
+
+position: absolute;
+left:0px;
+height: 50px;
+margin-top: 850px;  
 }
 
 
