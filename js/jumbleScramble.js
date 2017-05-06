@@ -497,6 +497,8 @@
 		
 			var elt = arguments[0];
 			var removeTrans = arguments[1];
+			var callBack = arguments[2];
+			
 			var n = elt.index();
 			var thisElts = this.elts;
 			var eltHeight = thisElts[n].completeHeight;
@@ -521,7 +523,7 @@
 				elt[0].style[transitionPrefix] = '250ms'; 
 				setTimeout(function(){ 
 					elt.remove()
-	
+					if (callBack) {callBack();}
 				}, 250);
 			}
 			else {
@@ -763,8 +765,11 @@
 			
 				instanceArr[i][options + 'LiElem'](arg1 || self, arg2, arg3)  // self is for the remove method, arg2 is then undefined.
 				}
-			});	
+			});
+		//	console.log(this.length)
 			
+
+			return this;
 		}
 		else {
 			

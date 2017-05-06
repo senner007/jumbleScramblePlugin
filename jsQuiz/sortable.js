@@ -3,6 +3,29 @@
 //$(window).bind("load", function() {
 $(document).ready(function() {	
 
+$('#removeButton').on('click', function () {
+	if ($('#removeButton').hasClass('deactive') ) {  return; }
+		$('#removeButton').addClass('deactive');
+		if ($(".jMyPuzzle").eq(0).find('li').eq(3).length ==0) { $('#removeButton').removeClass('deactive'); return; }
+		
+		$(".jMyPuzzle").eq(0).find('li').eq(3).jumbleScramble('remove', '' ,true, function () {
+			
+			$(".jMyPuzzle").eq(0).find('li').eq(0).jumbleScramble('remove', '' ,true, function () {
+				
+				
+			console.log('done')
+			$('#removeButton').removeClass('deactive');
+			});
+		});
+		
+
+});
+$('#addButton').on('click', function () {
+	$(".jMyPuzzle").eq(0).jumbleScramble('add', 'Lorem ipsum dolor.', 6,true);
+	
+});
+ 
+
   (function($){											
     $.fn.disableSelection = function() {
         return this
@@ -33,7 +56,7 @@ $(document).ready(function() {
 						// $(".jMyPuzzle").eq(1).jumbleScramble('add', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam et mi sapien.', 3, true)  
 						//$(".jMyPuzzle").eq(0).find('li').eq(0).jumbleScramble('remove', '' ,true)  // add true or false to animate remove 
 						//console.log ( $(".jMyPuzzle").eq(0).find('li').eq(3).text() );
-								$(".jMyPuzzle").eq(0).find('li').eq(3).jumbleScramble('remove', '' ,true)  // add true or false to animate remove 
+								//$(".jMyPuzzle").eq(0).find('li').eq(3).jumbleScramble('remove', '' ,true)  // add true or false to animate remove 
 						}						
 					});	
 			
