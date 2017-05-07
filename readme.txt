@@ -2,7 +2,6 @@ Todo:
 + add global vars for 'top'/'left' and 'completeHeight'/'completeWidth'
 + lock method prototype
 + make dropLimit work in horizontal mode
-+ animateBack to prototype
 + add margin for elt to constructor the first time it is calculated in animateback
 + dirSwitch on constructor
 + setChars function should update elt object as well, it does not work when moving to another container
@@ -11,7 +10,6 @@ Todo:
 + shuffle method
 + set width of list item in vertical layout if width is not set in css
 + test in slider
-+ Add/Remove Elements on trigger ( long term )
 + Multiple container drop ( long term )
 
 Working:
@@ -21,9 +19,11 @@ Working:
 + Cross-dragging between list containers
 + Individual height or width of list items
 + Optional margin between list items
-+ Specify maximum height of list items container
++ Option to disallow drop to containe when above height (dropLimit option)
 + Add and remove items from containers
-+ Remove and prepend items to previous container to prevent overflow
++ Callback function to remove method
++ Automatically remove and prepend items to containers to prevent overflow (cutOff option)
++ Multiple instances of jumbleScramble on the same page
 
 
 Dependency:

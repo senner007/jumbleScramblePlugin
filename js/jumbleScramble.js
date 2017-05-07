@@ -467,31 +467,57 @@
 				eltsSize += this.elts[i][eltDim];
 			
 		}
-		var tArr = []
+		var tArr = [];
 		while (eltsSize > this.cutOff) {
 			 
-			tArr.push(instanceArr[this.adjCon].addLiElem( this.elts[this.elts.length -1].text(), 0 , transSupport));
+			tArr.push(instanceArr[this.adjCon].addLiElem( this.elts[this.elts.length -1].text(), 0 , transSupport)[0]);
 			
 			this.removeLiElem( this.elts[this.elts.length -1] , transSupport)
 			eltsSize -=  this.elts[this.elts.length -1][eltDim];
 			
 		}
-
-		if (transSupport && instanceArr[this.adjCon].elts.length != 0) { // transition elements to make way for prepended but only if if there are any 
-			for (var i=0;i<tArr.length;i++) {																					
-				 tArr[i][0].style[transitionPrefix] = '0ms';	  tArr[i][0].style[transformPrefix] = 'scale(0,0)';
-				console.log( instanceArr[this.adjCon].elts[instanceArr[this.adjCon].elts.length -1].text())
-				} 
-				
-			instanceArr[this.adjCon].elts[instanceArr[this.adjCon].elts.length -1].one('transitionend', function (){		// callback function for when the items have moved down and made room for the newly prepended item(s)
-				for (var i=0;i<tArr.length;i++) {
-				 tArr[i][0].style[transitionPrefix] = '500ms';	  tArr[i][0].style[transformPrefix] = 'scale(1,1)';
-				
-				}
-			}) 
-		}
+		
+		this.animAdded(tArr, this.adjCon);
+		
+		
 	
 	};
+	JumbleScramble.prototype.animAdded = function (elems, parentCont) {	
+	
+		var tArr = elems;
+		var parentCont = parentCont;
+			
+		if (transSupport && tArr.length !=0) { // transition elements  but only if if there are any 
+		
+			for (var i=0;i<tArr.length;i++) {																					
+				 tArr[i].style[transitionPrefix] = '0ms';	  tArr[i].style[transformPrefix] = 'scale(0,0)';
+				console.log('sdsdsdsd')
+			} 
+			
+			if (instanceArr[parentCont].elts[tArr.length] && !$(tArr).is(':last-child')) {  
+			
+				instanceArr[parentCont].elts[instanceArr[parentCont].elts.length -1].one('transitionend', animAddedElems);   // callback function for when the items have moved down and made room for the newly prepended item(s)
+			
+			}
+			else {   // if there are no elements that have moved to make way for added elements(tArr)
+				setTimeout(function(){ // setTimeout is need because transform properties need time to be set.
+					animAddedElems();
+				}, 1);
+				
+				
+			}
+		}
+		
+		function animAddedElems () {
+			for (var i=0;i<tArr.length;i++) {			
+				tArr[i].style[transitionPrefix] = '500ms';	  tArr[i].style[transformPrefix] = 'scale(1,1)'; 
+				
+			}		
+		}
+	
+	
+	}
+	
 
 	JumbleScramble.prototype.removeLiElem = function () {							// Remove new li to previous collection
 		
@@ -503,7 +529,7 @@
 			var thisElts = this.elts;
 			var eltHeight = thisElts[n].completeHeight;
 			var eltWidth = thisElts[n].completeWidth;
-	
+		
 			for (var i=n +1;i<thisElts.length;i++) { 
 					var el = thisElts[i];
 					el[0].style[transitionPrefix] = removeTrans ? '250ms' : '0s';
@@ -540,13 +566,14 @@
 	
 	JumbleScramble.prototype.addLiElem = function (liText, liPosition, addTrans) {								// Add new li to previous collection
 			
-
+			
 			var thisElts = this.elts;
 			var n = Math.min(Math.max(parseInt(liPosition), 0), thisElts.length);
 			var o = this.options;
 			var listClass = o.isVertical ? 'listItem' : 'listItem-horizontal';
 			var elt = $('<li class=' + listClass +'>' + liText + '</li>');
-			if (addTrans) { elt[0].style[transformPrefix] = 'scale(0,0)'; elt[0].style.opacity = '1'; }
+			
+	/* 		if (addTrans) { elt[0].style[transformPrefix] = 'scale(0,0)'; elt[0].style.opacity = '1'; } */
 			
 			var tempArr = [];	
 			for (var i=n;i<thisElts.length;i++) { 	
@@ -558,7 +585,7 @@
 				'top' : n > 0 ? thisElts[n -1].pos.top + thisElts[n -1].completeHeight + 'px' : 0
 			}
 			
-			if (thisElts.length == 0) {elt.css(eltObj).appendTo(this.ul)} 							// if there are no elements present at drop
+			if (thisElts.length == 0) { elt.css(eltObj).appendTo(this.ul)} 							// if there are no elements present at drop
 			else (n > 0 ? elt.insertAfter( thisElts[n-1]).css(eltObj) : elt.insertBefore( thisElts[n]).css(eltObj) );
 			
 
@@ -576,7 +603,7 @@
 				ets0.style.top = parseInt(ets0.style.top) + $thisHeight + 'px' 
 				
 				if (addTrans) {
-					
+					//console.log(ets0)
 					ets0.style[transformPrefix] = 'translate(' + -($thisWidth)  + 'px,' +  -($thisHeight) + 'px)';	
 					thisElts[i].transToZero(); 
 				}	
@@ -599,8 +626,13 @@
 				tempArr[i].n = n + i+1;
 				thisElts[n + 1 + i] = tempArr[i];			
 			}
-			if (addTrans) { elt[0].style[transitionPrefix] = '500ms'; elt[0].style[transformPrefix] = 'scale(1,1)'; elt[0].style.opacity = '1';  return elt; };	
-	
+			if (addTrans) { 
+				var tArr = [elt[0]];
+				this.animAdded(	tArr,  this.container) 
+				/* elt[0].style[transitionPrefix] = '500ms'; elt[0].style[transformPrefix] = 'scale(1,1)'; elt[0].style.opacity = '1';  */    
+				return elt; 
+			}; 	// animation only needed when triggering add
+			
 		
 	}
 
@@ -613,7 +645,7 @@
 		var li = this.div.find('li');					// Variables declaration
 		var left=0, top = 0, n = 0, ulSize = 0;	
 		
-		var thisElts = this.elts = new Array(li.size());
+		var thisElts = this.elts = new Array(li.length);
 			
 		for (var i=0;i<thisElts.length;i++) { 
 			var elt = li.eq(i);	

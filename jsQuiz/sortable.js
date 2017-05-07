@@ -13,7 +13,7 @@ $('#removeButton').on('click', function () {
 			$(".jMyPuzzle").eq(0).find('li').eq(0).jumbleScramble('remove', '' ,true, function () {
 				
 				
-			console.log('done')
+		
 			$('#removeButton').removeClass('deactive');
 			});
 		});
@@ -21,7 +21,7 @@ $('#removeButton').on('click', function () {
 
 });
 $('#addButton').on('click', function () {
-	$(".jMyPuzzle").eq(0).jumbleScramble('add', 'Lorem ipsum dolor.', 6,true);
+	$(".jMyPuzzle").eq(1).jumbleScramble('add', 'Lorem ipsum dolosdfdsfds fdsfdsfdsfdfdsffdsfdsfdsfdsfd sfdsfdsfdsfdsfdsfdsfdsf dsfdsfdsfdsfdsfdsf fdsfdffdsfdsfdsfdsfdsfdsfdfdf dsfdsfdsfdsfdsfdsfdsfdsfr.', 2,true);
 	
 });
  
@@ -69,7 +69,7 @@ $('#addButton').on('click', function () {
 						isVertical: false,
 						//setChars: false, // does not work when moving to another container
 						//dropLimit: [300, 300], // currently doesn't work but must be set
-						cutOff: [600,660],
+						cutOff: [600,6060],
 						layoutComplete: function (instanceArray) {	
 								console.log(instanceArray)
 								// $(".jMyPuzzle").eq(0).jumbleScramble('add', 'Lorem ipsum dolor.', 6) 
